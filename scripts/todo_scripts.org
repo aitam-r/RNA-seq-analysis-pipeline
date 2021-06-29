@@ -1,0 +1,32 @@
+* TODO Goals
+** R DESeq2 scripts
+*** Understanding
+- [ ] Why use padj when there is FDR? Is padj any good?
+- [ ] =filterThreshold=? What is it? Independent filtering?
+- [ ] Why take the 20 000 most up/down-regulated genes? Why 20k? Not adaptative to dataset.
+- [ ] Why plot again in the analysis (especially =plotMA=?)
+- [ ] What are the bins for (to understand, not to correct)
+- [ ] What is rlog transformation file, and why use a log2(1+count) in there, as it is just a worse rlog? It is for a comparison it seems
+- [ ] Why sometimes =pheatmap=, sometimes =heatmap.2=?
+
+*** Correction
+- [ ] Clean up and comment Soham's code
+- [ ] Maybe use built-in =Maplot= and =pcaPlot= functions? Same for =volcanoplot=?
+- [ ] Why export =volcanoplot= to postcript aaaah
+- [ ] Where are the =$treatment= and =$patient= coming from?
+- [ ] Is there no better standard way to plot distance between samples? see MSMB
+
+*** Adaptation
+- [ ] Interface the beginning with =salmon= via =tximeta= in order to annotate and de-normalize the data for =DESeq2=.
+- [ ] See that I can execute the analysis from the command line at some point (not a priority)
+- [ ] Make all the plots export to svg/png in a dedicated analysis subfolder, for further analysis/evaluation
+- [ ] On the same note, do the same with the =.csv= output, but maybe in data?
+- [X] Install relevant packages
+
+
+** R WGNA scripts
+- [ ]
+
+
+** Other scripts
+- [ ] Integrate the =download_dump= in a Snakefile, or rather integrate both the =download_dump= and the Snakefile in a third, more interactive script? 
