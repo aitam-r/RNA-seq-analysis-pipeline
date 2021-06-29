@@ -1,7 +1,9 @@
 #A changer si taf sans DD
-setwd("/run/media/paulet/Taf_Paul/liver/scripts/")
+wd <- "~/Documents/TAAAAF/Stage/liver/"
+image_dir <- file.path(wd, "analysis/R_images/")
+setwd(wd)
 
-## install required packages
+## load required packages
 library(BiocManager)
 library(DESeq2)
 library(RColorBrewer)
@@ -10,31 +12,40 @@ library(gplots)
 library(genefilter)
 #library(vsn) for microarray data, not sure if useful/necessary
 library(pheatmap)
+library(tximeta)
+library(magrittr)
 
 #################################
-#     Not to keep               #
+#    Annotations, importation   #
 #################################
-# Import data file that contains gene counts
-countdata <- read.table("DataCount.txt", header=TRUE, row.names=1)
-countdata <- countdata[ ,c(1:14, 16:18)]
-countdata <- as.matrix(countdata)
-head(countdata)
+dir_quants <- file.path(wd, "data/quants")
+runTable <- read.table("SraRunTable.txt", header = T, sep = ",")
 
-# Assign condition
-(condition <- factor(c(rep("scrambled", 6), rep("shPit1", 6), rep("shPit2", 5))))
+#Treatment is not really suitable as a condition, but how to automate "shrinkage"?
+coldata <- data.frame(names = runTable$Run, condition = runTable$Treatment)
+coldata$files <- file.path(dir_quants, coldata$names, "quant.sf")
+file.exists(coldata$files)
+
+se <- tximeta(coldata)
+gse <- summarizeToGene(se)
+gse$condition %<>% factor()
+gse$condition %<>% relevel("vehicle 2h") #IMPORTANT
+
 
 ################################
-#        Analysis              #
+#     Exploratory Analysis     #
 ################################
 
+dds <- DESeqDataSet(gse, design = ~ condition) #Warning on names, yeah I mean they're right
 
-# Analysis with DESeq2
-(coldata <- data.frame(row.names=colnames(countdata), condition))
-dds <- DESeqDataSetFromMatrix(countData=countdata, colData=coldata, design=~condition) #change to fromTxiblabla
-dds <- DESeq(dds)
-
+#Basic filter
+#Only keeps genes with more than count across fragment
+keep <- rowSums(counts(dds)) > 1 
+dds <- dds[keep,]
+nrow(dds)
+#--------------------------------------------------------------------< STOPPED HERE
 # Plot dispersions
-png("qc-dispersions.png", 1000, 1000, pointsize=20)
+png(file.path(image_dir, "qc-dispersions.png"), 1000, 1000, pointsize=20)
 plotDispEsts(dds, main="Dispersion plot")
 dev.off()
 
