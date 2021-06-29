@@ -1,0 +1,8 @@
+/.snakemake/
+/scripts/.Rhistory
+*~
+*.zip
+*.html
+*.gz
+*multiqc*
+*quants*
