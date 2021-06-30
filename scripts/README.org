@@ -1,2 +1,4 @@
 * Content
 Scripts, for download =download_dump.py=, processing (but the main one is the Snakefile in the main directory), and for analysis given by Soham and to be modified by me to fit in the workflow.
+The =deseq_repro.R= script is an attempt to reproduce the paper's results (PMID : 30539787) starting from raw counts.
+The =deseq_script.R= file will for trying to come up with a more general analysis script.

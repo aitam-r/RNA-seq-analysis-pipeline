@@ -14,9 +14,13 @@ library(pheatmap)
 library(tximeta)
 library(magrittr)
 library(stringr)
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+library(ggvenn)
+
 
 #################################
-#   Importation, annotations    #
+#   Importation                 #
 #################################
 dir_quants <- file.path(wd, "data/quants")
 runTable <- read.table("SraRunTable.txt", header = T, sep = ",")
@@ -42,6 +46,7 @@ levels(gse$condition)[levels(gse$condition)=="TGF-bet"] <- "TGF_beta"
 ################################
 
 dds <- DESeqDataSet(gse, design = ~ condition) 
+
 
 #Basic filter
 #Only keeps genes with more than count across fragment
@@ -118,6 +123,7 @@ dev.off()
 ########################################
 
 dds <- DESeq(dds)
+
 # Plot dispersions
 png(file.path(image_dir, "qc-dispersions.png"), 1000, 1000, pointsize=20)
 plotDispEsts(dds, main="Dispersion plot")
@@ -128,117 +134,73 @@ res_TGF <- results(dds, contrast = c("condition", "TGF_beta", "vehicle"))
 res_PDGF <- results(dds, contrast = c("condition", "PDGF_BB", "vehicle"))
 res_P_T <- results(dds, contrast = c("condition", "PDGF_BB", "TGF_beta"))
 
-#It's Soham after this point
-#>--------------------------------------------------------------------------<
+
+#/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+#-------------------------------------------------------------------
+#             I used GRCH38 and not hg19 as in the paper
+
+#Annotation (not sure it works well)
+ens.str <- substr(rownames(res_TGF), 1, 15)
+res_TGF$symbol <- res_PDGF$symbol <- 
+  res_P_T$symbol <- mapIds(org.Hs.eg.db,
+                     keys=ens.str,
+                     column="SYMBOL",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+
+#Finding which genes are upregulated vs vehicle in both treatment
+table(res_TGF$padj < 0.05 & res_TGF$log2FoldChange > 1.5)
+table(res_PDGF$padj < 0.05 & res_PDGF$log2FoldChange > 1.5)
+sig_TGF <- which(res_TGF$padj < 0.05 & res_TGF$log2FoldChange > 1.5)
+sig_PDGF <- which(res_PDGF$padj < 0.05 & res_PDGF$log2FoldChange > 1.5)
+both_sig <- intersect(sig_PDGF, sig_TGF)
+
+#drawing a Venn diagramm of upregulated genes
+list_sig <- list("pdgf" = sig_PDGF, "tgf" = sig_TGF)
+ggvenn(list_sig, c("pdgf", "tgf"))
+
+#finding the names of co-up-regulated genes
+both_sig_names <- res_TGF[both_sig, "symbol"]
 
 
-# Get differential expression results
-res <- results(dds)
-table(res$padj<0.05)
-## Order by adjusted p-value
-res <- res[order(res$padj), ]
-## Merge with normalized count data
-resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE)), by="row.names", sort=FALSE)
-names(resdata)[1] <- "Gene"
-head(resdata)
-## Write results
-write.csv(resdata, file="diffexpr-results.csv")
+#---------Compare with paper selection V1 ENSEMBL -> Symbol
+genes_repro <- read.table(file.path(wd, "data/Repro_data/genes_up_propre.txt"))
+genes_repro_vec <- genes_repro$V1
+#liste des noms en commun entre les deux 
+list_names_comp <- list("mine"=both_sig_names, "paper"=genes_repro_vec)
+ggvenn(list_names_comp, c("mine", "paper"))
+#not looking great are we, only 67% of 112 genes found.
 
-## Examine plot of p-values
-hist(res$pvalue, breaks=50, col="grey")
+#--------Compare with paper selection V2 Symbol -> ENSEMBL
+#The following line assigns duplicate ENS ref 
+genes_repro_ens <- mapIds(org.Hs.eg.db,
+                         keys=unname(genes_repro_vec),
+                         column="ENSEMBL",
+                         keytype="SYMBOL",
+                         multiVals="first")
+both_sig_ens <- rownames(res_TGF)[both_sig]
+list_names_comp_ens <- list("mine"=both_sig_ens, "paper"=unname(genes_repro_ens))
 
-## Examine independent filtering
-attr(res, "filterThreshold")
-plot(attr(res,"filterNumRej"), type="b", xlab="quantiles of baseMean", ylab="number of rejections")
+ggvenn(list_names_comp_ens, c("mine", "paper"))
 
-## MA plot
-maplot <- function (res, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
-  with(res, plot(baseMean, log2FoldChange, pch=10, cex=.5, log="x", ...))
-  with(subset(res, padj<thresh), points(baseMean, log2FoldChange, col="blue", pch=10, cex=1.5))
-}
-png("diffexpr-maplot1.png", 1500, 1000, pointsize=15)
-maplot(resdata, main="MA Plot")
-dev.off()
+###################################
+#      Looking at indiv genes     #
+###################################
+#EZH2
+lfc_tgf <- res_TGF[which(res_TGF$symbol=="EZH2"),]$log2FoldChange
+lfc_pdgf <- res_PDGF[which(res_PDGF$symbol=="EZH2"),]$log2FoldChange
+fc_tgf <- 2**lfc_tgf
+fc_pdgf <- 2**lfc_pdgf
+#Here I'm good, it's very close to the paper's numbers
 
-## Volcano plot with "significant" genes labeled
-volcanoplot <- function (res, lfcthresh=2, sigthresh=0.05, main="Volcano Plot", legendpos="bottomright", labelsig=TRUE, textcx=1, ...) {
-  with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main=main, ...))
-  with(subset(res, padj<sigthresh ), points(log2FoldChange, -log10(pvalue), pch=20, col="red", ...))
-  with(subset(res, abs(log2FoldChange)>lfcthresh), points(log2FoldChange, -log10(pvalue), pch=20, col="orange", ...))
-  with(subset(res, padj<sigthresh & abs(log2FoldChange)>lfcthresh), points(log2FoldChange, -log10(pvalue), pch=20, col="green", ...))
-  legend(legendpos, xjust=1, yjust=1, legend=c(paste("FDR<",sigthresh,sep=""), paste("|LogFC|>",lfcthresh,sep=""), "both"), pch=20, col=c("red","orange","green"))
-}
-postscript("diffexpr-volcanoplot.ps", 1200, 1000, pointsize=20)
-volcanoplot(resdata, lfcthresh=1, sigthresh=0.05, textcx=.8, xlim=c(-2.3, 2))
-dev.off()
+pdgfa <- res_TGF[which(res_TGF$symbol=="PDGFA"),]$log2FoldChange
+pdgfb <- res_TGF[which(res_TGF$symbol=="PDGFB"),]$log2FoldChange
+vegfa <- res_TGF[which(res_TGF$symbol=="VEGFA"),]$log2FoldChange
+fgf2 <- res_TGF[which(res_TGF$symbol=="FGF2"),]$log2FoldChange
+#Close to the paper, too
+ctgf <- res_TGF[which(res_TGF$symbol=="CCN2"),]$log2FoldChange
+#needed to change name
 
-
-## analysis
-#strongest down regulation
-resSig <- res[ which(res$padj < 0.0001 ), ]
-up<-head( resSig[ order( resSig$log2FoldChange ), ], 20000 )
-
-#strongest down regulation
-down<- tail( resSig[ order( resSig$log2FoldChange ), ], 20000 )
-plotMA( down, ylim = c(-1, 1) )
-plotDispEsts( dds, ylim = c(1e-6, 1e1) )
-
-# create bins using the quantile function
-qs <- c( 0, quantile( res$baseMean[res$baseMean > 0], 0:7/7 ) )
-# "cut" the genes into the bins
-bins <- cut( res$baseMean, qs )
-# rename the levels of the bins using the middle point
-levels(bins) <- paste0("~",round(.5*qs[-1] + .5*qs[-length(qs)]))
-# calculate the ratio of £p£ values less than .01 for each bin
-ratios <- tapply( res$pvalue, bins, function(p) mean( p < .01, na.rm=TRUE ) ) # plot these ratios
-barplot(ratios, xlab="mean normalized count", ylab="ratio of small $p$ values")
-
-
-
-##rlog transformation file
-rld <- rlog( dds ) 
-head( assay(rld) )
-par( mfrow = c( 1, 2 ) )
-plot( log2( 1+counts(dds, normalized=TRUE)[, 1:2] ), col="#00000020", pch=20, cex=0.3 ) 
-plot( assay(rld)[, 1:2], col="#00000020", pch=20, cex=0.3 )
-
-
-sampleDists <- dist( t( assay(rld) ) )
-sampleDists
-sampleDistMatrix <- as.matrix( sampleDists ) 
-rownames(sampleDistMatrix) <- paste( rld$treatment,rld$patient, sep="-" )
-colnames(sampleDistMatrix) <- NULL
-colours = colorRampPalette( rev(brewer.pal(9, "Blues")) )(255) 
-heatmap.2( sampleDistMatrix, trace="none", col=colours)
-
-write.csv(sampleDistMatrix, file="dist_matrix.csv")
-
-topVarGenes <- head(order(rowVars(assay(rld)), decreasing=TRUE), 35000)
-heatmap.2( assay(rld)[ topVarGenes, ], scale="row", trace="none", dendrogram="column",
-           col = colorRampPalette( rev(brewer.pal(9, "RdBu")) )(255))
-
-
-##Multi-factor designs
-colData(dds)
-ddsMF <- dds
-levels(ddsMF)
-
-#transformation
-vsd <- vst(dds, blind=FALSE)
-rld <- rlog(dds, blind=FALSE)
-head(assay(vsd), 3)
-
-# this gives log2(n + 1)
-ntd <- normTransform(dds)
-meanSdPlot(assay(ntd))
-meanSdPlot(assay(vsd))
-meanSdPlot(assay(rld))
-
-select <- order(rowMeans(counts(dds,normalized=TRUE)),
-                decreasing=TRUE)[1:20]
-df <- as.data.frame(colData(dds)[,c("condition")])
-pheatmap(assay(rld)[select,], cluster_rows=FALSE, show_rownames=FALSE,
-         cluster_cols=FALSE, annotation_col=df)
 
 
 ### GO analysis

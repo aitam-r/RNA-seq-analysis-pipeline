@@ -5,3 +5,6 @@
 *.gz
 *multiqc*
 data/quants*
+/analysis/R_images
+/data/Repro*
+/random_notes.org
