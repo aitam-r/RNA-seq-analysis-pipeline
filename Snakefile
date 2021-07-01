@@ -20,7 +20,7 @@ rule multiqc:
 
 rule fastqc:
     input:
-        "data/{dirs}/{sample}.fastq"
+        "data/{dirs}/{sample}.fastq.gz"
     output:
         "analysis/{dirs}/{sample}_fastqc.zip"
     params:
@@ -31,11 +31,11 @@ rule fastqc:
 
 rule cutadapt:
     input:
-        r1="data/seqs/{sample}_1.fastq",
-        r2="data/seqs/{sample}_2.fastq"
+        r1="data/seqs/{sample}_1.fastq.gz",
+        r2="data/seqs/{sample}_2.fastq.gz"
     output:
-        o1="data/trim/{sample}_1.fastq",
-        o2="data/trim/{sample}_2.fastq"
+        o1="data/trim/{sample}_1.fastq.gz",
+        o2="data/trim/{sample}_2.fastq.gz"
     threads: 1
     params:
         a1="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA",
@@ -49,8 +49,8 @@ rule cutadapt:
 
 rule salmon_quant:
     input:
-        r1 = "data/trim/{sample}_1.fastq",
-        r2 = "data/trim/{sample}_2.fastq",
+        r1 = "data/trim/{sample}_1.fastq.gz",
+        r2 = "data/trim/{sample}_2.fastq.gz",
         index = "data/index/salmon_partial_sa_index__default/default"
     output:
         "data/quants/{sample}/quant.sf"
