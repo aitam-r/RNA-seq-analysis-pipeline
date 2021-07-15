@@ -7,5 +7,9 @@ The steps of the pipeline are as follow :
 2. Quality control with =fastqc= and =multiqc=
 3. Adapter trimming with =cutadapt= (and re - =fastqc=)
 4. Pseudo-mapping and quantification with =salmon=
-5. DEG analysis with =DESeq2=
-6. Clustering analysis with =WGCNA=
+5. Importation/transcript quantification are done with =tximeta=
+6. DEG analysis with =DESeq2=
+7. Clustering analysis with =WGCNA=
+** Workflow tools
+- steps 2-3-4 are performed via =Snakemake=
+- steps 5-6 through a =shiny= interface
