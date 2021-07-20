@@ -9,18 +9,17 @@
 - [X] What is rlog transformation file, and why use a log2(1+count) in there, as it is just a worse rlog? It is for a comparison it seems
 - [ ] Why sometimes =pheatmap=, sometimes =heatmap.2=?
 
-*** TODO Correction [2/5]
+*** TODO Correction [3/5]
 - [ ] Clean up and comment Soham's code
-- [ ] Maybe use built-in =Maplot= and =pcaPlot= functions? Same for =volcanoplot=?
+- [X] Maybe use built-in =Maplot= and =pcaPlot= functions? Same for =volcanoplot=?
 - [X] Why export =volcanoplot= to postcript aaaah
 - [X] Where are the =$treatment= and =$patient= coming from?
 - [ ] Is there no better standard way to plot distance between samples? see MSMB
 
-*** TODO Adaptation [3/5]
+*** TODO Adaptation [4/4]
 - [X] Interface the beginning with =salmon= via =tximeta= in order to annotate and de-normalize the data for =DESeq2=.
-- [ ] See that I can execute the analysis from the command line at some point (not a priority)
 - [X] Make all the plots export to svg/png in a dedicated analysis subfolder, for further analysis/evaluation
-- [ ] On the same note, do the same with the =.csv= output, but maybe in data?
+- [X] On the same note, do the same with the =.csv= output, but maybe in data?
 - [X] Install relevant packages
 
 
@@ -28,21 +27,26 @@
 - [ ]
 
 
-** TODO shiny
+** TODO shiny [8/14]
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
 - [X] logFoldChange and p-value cutoffs (on sliders?)
-- [ ] Choose what to highlight in the PCA =intgroups=.
-- [ ] Plot particular genes (could be hard) could use function =selectize=, but it could be slow
+- [X] Show the end of computation of all the =DESeq= functions. (not needed?)
 - [X] Top DE genes 
   - [X] numeric input
-  - [X] renderDataTable and DataTableOutput from DT instead of plane shiny : it comes with a search function!
+  - [X] renderDataTable and DataTableOutput from DT instead of plain shiny : it comes with a search function!
 - [X] Multiple tabs, *exploratory analysis*, *table*, *Network analysis*
 - [X] Allow download of table of genes, with =downloadButton()= (UI) and =downloadHandler()= (server)
-- [X] Show the end of computation of all the =DESeq= functions. (not needed?)
-- [ ] Show number of up/downregultaed genes at current threshold
+- [X] Show number of up/downregultaed genes at current thresholds
+- [ ] Draw a MAplot, add possibility to choose shrunken fold changes
+- [ ] Choose what to highlight in the PCA =intgroups=, maybe is only interesting if multiple variables
+- [ ] Plot particular genes (could be hard) could use function =selectize=, but it could be slow
+- [ ] Show only potential variables (not names and files)
+- [ ] Show gene names (after an annotation)
+- [ ] Allow brush to select some genes on the Maplot? Useful?
 
 
-** Other scripts
+**  TODO Other scripts [0/2]
 - [ ] Integrate the =download_dump= in a Snakefile, or rather integrate both the =download_dump= and the Snakefile in a third, more interactive script?
+- [ ] Create heuristics to detect the file containing the SRA accession numbers?
 

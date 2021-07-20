@@ -14,6 +14,7 @@ library(stringr)
 library("AnnotationDbi")
 library("org.Hs.eg.db")
 library(ggvenn)
+library(shinythemes)
 
 # Functions ----------------------------------------------------------------------
 # volcanoplot <- function (res, lfcthresh=2, sigthresh=0.05, main="Volcano Plot", legendpos="bottomright", labelsig=TRUE, textcx=1, ...) {
@@ -28,9 +29,11 @@ library(ggvenn)
 # Preliminary code ---------------------------------------------------------------
 load("txidata.RData")
 
+
+
 # UI -----------------------------------------------------------------------------
 
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("cosmo"),
   navbarPage(
     title = "My little app",
     tabPanel("Setup",
@@ -55,6 +58,8 @@ ui <- fluidPage(
     ),
     tabPanel("PCA", plotOutput(outputId = "pca")),
     
+    tabPanel("MAplot", plotOutput(outputId = "ma")),
+    
     tabPanel("Most DEGs",
              sidebarLayout(
                
@@ -73,6 +78,9 @@ ui <- fluidPage(
                ),
                
                mainPanel(
+                 
+                 textOutput(outputId = "nb_genes"),
+                 br(),
                  DT::dataTableOutput(outputId = "genes"),
 
 		 downloadButton(outputId = "download",
@@ -89,8 +97,10 @@ ui <- fluidPage(
 # Server -------------------------------------------------------------------------
 server <- function(input, output, session) {
   
+  #An object to store everything
   my_values <- reactiveValues()
   
+  #The table of genes, displayed on DEG panel
   gene_table <- reactive({
     my_values$res[order(my_values$res$padj), ] %>% 
       as.data.frame() %>% 
@@ -100,6 +110,7 @@ server <- function(input, output, session) {
       mutate(across(everything(), signif, 3))
   })
   
+  #The button to run DESeqDataSet, DESeq, results
   observeEvent(input$execute, {
     req(input$variables)
     req(input$compare_cond)
@@ -113,6 +124,8 @@ server <- function(input, output, session) {
     
     
     my_values$rld <- rlogTransformation(my_values$dds)
+    
+    #temporary first element of contrast /!\
     my_values$res <- results(my_values$dds,
                              contrast = c(input$variables[1], input$compare_cond, input$base_cond))
     
@@ -122,6 +135,29 @@ server <- function(input, output, session) {
   
   output$pca <- renderPlot({
     plotPCA(my_values$rld)
+  })
+  
+  output$ma <- renderPlot({
+    plotMA(my_values$res, alpha = 0.05)
+  })
+  
+  output$nb_genes <- renderText({
+    req(input$pval_cutoff)
+    req(input$lfc_cutoff)
+    
+    up <- my_values$res %>% 
+      as.data.frame() %>%
+      filter(padj < input$pval_cutoff, log2FoldChange > input$lfc_cutoff) %>%
+      nrow()
+    
+    down <- my_values$res %>% 
+      as.data.frame() %>%
+      filter(padj < input$pval_cutoff, log2FoldChange < -input$lfc_cutoff) %>%
+      nrow()
+    
+    paste("There are ", up, " significantly upregulated genes", " and there are ",
+          down, "significantly downregulated genes", "at a p-value of", 
+          input$pval_cutoff, " and a LFC of ", input$lfc_cutoff)
   })
   
   output$genes <- DT::renderDataTable({
