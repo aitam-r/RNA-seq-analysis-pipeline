@@ -59,19 +59,13 @@ ui <- fluidPage(
              sidebarLayout(
                
                sidebarPanel(
-                 sliderInput(inputId = "n_genes",
-                             label = "Number of most differentially expressed genes shown : ",
-                             min = 1,
-                             max = 1000,
-                             value = 50,
-                             step = 10,
-                             round = 1),
                  numericInput(inputId = "pval_cutoff",
                              label = "Enter the maximum p-value :",
                              value = 0.05,
                              min = 0,
                              max = 1,
                              step = .05),
+                 
                  numericInput(inputId = "lfc_cutoff",
                               label = "Enter the minimum (absolute) logFoldChange :",
                               value = 1,
@@ -79,7 +73,10 @@ ui <- fluidPage(
                ),
                
                mainPanel(
-                 DT::dataTableOutput(outputId = "genes")
+                 DT::dataTableOutput(outputId = "genes"),
+
+		 downloadButton(outputId = "download",
+                                label = "Download table")
                )
              )
     )
@@ -95,7 +92,7 @@ server <- function(input, output, session) {
   my_values <- reactiveValues()
   
   gene_table <- reactive({
-    head(my_values$res[order(my_values$res$padj), ], input$n_genes) %>% 
+    my_values$res[order(my_values$res$padj), ] %>% 
       as.data.frame() %>% 
       select(baseMean, log2FoldChange, padj) %>%
       filter(padj < input$pval_cutoff, log2FoldChange > input$lfc_cutoff | log2FoldChange < -input$lfc_cutoff) %>%
@@ -132,6 +129,15 @@ server <- function(input, output, session) {
     req(input$lfc_cutoff)
     gene_table()
   })
+  
+  output$download <- downloadHandler(
+    filename = function() {
+      paste("genes", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(gene_table(), file)
+    }
+  )
   
   # 
   # output$volcano <- renderPlot(

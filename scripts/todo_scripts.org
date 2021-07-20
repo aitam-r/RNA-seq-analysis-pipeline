@@ -34,12 +34,13 @@
 - [X] logFoldChange and p-value cutoffs (on sliders?)
 - [ ] Choose what to highlight in the PCA =intgroups=.
 - [ ] Plot particular genes (could be hard) could use function =selectize=, but it could be slow
-- [ ] Top DE genes 
-  - [ ] numeric input
-  - [ ] renderDataTable and DataTableOutput from DT instead of plane shiny : it comes with a search function!
+- [X] Top DE genes 
+  - [X] numeric input
+  - [X] renderDataTable and DataTableOutput from DT instead of plane shiny : it comes with a search function!
 - [X] Multiple tabs, *exploratory analysis*, *table*, *Network analysis*
-- [ ] Allow download of table of genes, with =downloadButton()= (UI) and =downloadHandler()= (server)
-- [ ] Show the end of computation of all the =DESeq= functions. (not needed?)
+- [X] Allow download of table of genes, with =downloadButton()= (UI) and =downloadHandler()= (server)
+- [X] Show the end of computation of all the =DESeq= functions. (not needed?)
+- [ ] Show number of up/downregultaed genes at current threshold
 
 
 ** Other scripts
