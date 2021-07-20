@@ -31,7 +31,7 @@
 ** TODO shiny
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
-- [ ] logFoldChange and p-value cutoffs (on sliders?)
+- [X] logFoldChange and p-value cutoffs (on sliders?)
 - [ ] Choose what to highlight in the PCA =intgroups=.
 - [ ] Plot particular genes (could be hard) could use function =selectize=, but it could be slow
 - [ ] Top DE genes 

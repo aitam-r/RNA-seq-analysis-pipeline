@@ -65,7 +65,17 @@ ui <- fluidPage(
                              max = 1000,
                              value = 50,
                              step = 10,
-                             round = 1)
+                             round = 1),
+                 numericInput(inputId = "pval_cutoff",
+                             label = "Enter the maximum p-value :",
+                             value = 0.05,
+                             min = 0,
+                             max = 1,
+                             step = .05),
+                 numericInput(inputId = "lfc_cutoff",
+                              label = "Enter the minimum (absolute) logFoldChange :",
+                              value = 1,
+                              min = 0)
                ),
                
                mainPanel(
@@ -83,6 +93,15 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   my_values <- reactiveValues()
+  
+  gene_table <- reactive({
+    head(my_values$res[order(my_values$res$padj), ], input$n_genes) %>% 
+      as.data.frame() %>% 
+      select(baseMean, log2FoldChange, padj) %>%
+      filter(padj < input$pval_cutoff, log2FoldChange > input$lfc_cutoff | log2FoldChange < -input$lfc_cutoff) %>%
+      #Significant digits
+      mutate(across(everything(), signif, 3))
+  })
   
   observeEvent(input$execute, {
     req(input$variables)
@@ -109,11 +128,9 @@ server <- function(input, output, session) {
   })
   
   output$genes <- DT::renderDataTable({
-    head(my_values$res[order(my_values$res$padj), ], input$n_genes) %>% 
-      as.data.frame() %>% 
-      select(baseMean, log2FoldChange, padj) %>%
-      #Significant digits
-      mutate(across(everything(), signif, 3))
+    req(input$pval_cutoff)
+    req(input$lfc_cutoff)
+    gene_table()
   })
   
   # 

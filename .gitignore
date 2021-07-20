@@ -10,3 +10,4 @@ data/quants*
 /random_notes.org
 *.RData
 /scripts/shiny/.Rhistory
+/scripts/shiny/genes.csv
