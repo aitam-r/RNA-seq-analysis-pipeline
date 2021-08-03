@@ -3,7 +3,7 @@
 ui <- fluidPage(theme = shinytheme("cosmo"),
                 navbarPage(
                   title = "My little app",
-                  tabPanel("Setup",
+                  tabPanel("DESeq Set-up",
                            #Choose the experimental design
                            selectInput(inputId = "variables",
                                        label = "Choose the variables of the experimental design :",
@@ -20,7 +20,7 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                        label = "Choose the condition to compare with:",
                                        choices = levels(gse$condition)),
                            
-                           actionButton(inputId = "execute",
+                           actionButton(inputId = "execute_d",
                                         label = "Run DESeq2")
                   ),
                   
@@ -72,6 +72,34 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                plotOutput(outputId = "plot_gene")
                              )
                            )
+                  ),
+                  tabPanel("WGCNA Set-up",
+                           sidebarLayout(
+                             
+                             sidebarPanel(
+                               br(),
+                               textOutput(outputId = "warning"),
+                               br(),
+                               actionButton(inputId = "explore_w",
+                                            label = "Explore Samples"),
+                               
+                               selectizeInput(inputId = "rm_sample",
+                                              label = "Choose which sample to exclude : ",
+                                              choices = coldata$names,
+                                              multiple = T,
+                                              options = list(maxItems = length(coldata$names) - 3)),
+                               
+                               sliderInput(inputId = "percent_g",
+                                           label = "Percentage of filtered genes, based on variation",
+                                           value = 0.1,
+                                           min = 0.1,
+                                           max = 0.2)
+                             ),
+                             mainPanel(
+                               plotOutput("outliers")
+                             )
+                           )
                   )
+                  
                 )
 )

@@ -1,6 +1,6 @@
 * TODO Goals
 ** TODO R DESeq2 scripts
-*** TODO Understanding [3/7]
+*** TODO Understanding [3/8]
 - [ ] Why use padj when there is FDR? Is padj any good?
 - [ ] =filterThreshold=? What is it? Independent filtering?
 - [X] Why take the 20 000 most up/down-regulated genes? Why 20k? Not adaptative to dataset.
@@ -8,6 +8,7 @@
 - [ ] What are the bins for (to understand, not to correct)
 - [X] What is rlog transformation file, and why use a log2(1+count) in there, as it is just a worse rlog? It is for a comparison it seems
 - [ ] Why sometimes =pheatmap=, sometimes =heatmap.2=?
+- [ ] Investigate difference between GENCODE and Ensemble gene names, regarding issues with "duplicate genes on haplotype chromosomes"
 
 *** TODO Correction [3/5]
 - [ ] Clean up and comment Soham's code
@@ -23,11 +24,19 @@
 - [X] Install relevant packages
 
 
-** TODO R WGNA scripts
-- [ ]
+** TODO R WGCNA scripts [5/8]
+- [ ] Clean up Soham's code
+- [X] Run GWENA on some samples? Or do only WGCNA?
+- [X] Figure out what at which point to get normalized counts (and nothing else) from my pipeline :
+  The problem is that DESeq2 takes un-normalized counts, salmon provides normalized counts : =counts(dds, normalized = TRUE)= provides DESeq2-normalized counts.
+- [ ] Integrate the basic analysis into shiny
+- [X] Compare functional enrichment across %tages of filtered genes
+- [X] A subset of genes is selected (else it is too resource-intensive), the highest-variance ones. However, we've seen that there is a mean-variance relationship in count data. So our selection is biased towards highly expressed genes (is that bad?), unless we use a variance stabilizing transformation.
+- [X] Pre-screen data to eliminate outlier samples!
+- [ ] Put a warning on sample count
 
 
-** TODO shiny [10/16]
+** TODO shiny [10/18]
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
 - [X] logFoldChange and p-value cutoffs (on sliders?)
@@ -46,9 +55,15 @@
 - [ ] Allow brush to select some genes on the Maplot? Useful?
 - [ ] Add a  =fileInput= to enter the coldata information?
 - [ ] See that the figures scale better
+- [ ] Add a possibility to download only DEGs names for ORA, or w/ lfc for GSEA?
 
 
-**  TODO Other scripts [0/2]
-- [ ] Integrate the =download_dump= in a Snakefile, or rather integrate both the =download_dump= and the Snakefile in a third, more interactive script?
+**  TODO Other scripts [1/3]
 - [ ] Create heuristics to detect the file containing the SRA accession numbers?
+- [ ] Add an automatic download of the index from refgenie
+- [X] Add refgenie to the mamba environment
 
+** TODO General [0/3]
+- [ ] Cite all papers related to packages used : credit where credit is due
+- [ ] Update the README with steps
+- [ ] Add a graph with the steps and the entry points

@@ -1,4 +1,5 @@
 library(tximeta)
+library(magrittr)
 
 setwd("~/Documents/TAAAAF/Stage/liver/scripts/shiny/")
 head_dir <- "../.."
@@ -12,6 +13,8 @@ se <- tximeta(coldata)
 
 ## Only gene expression is of interest here
 gse <- summarizeToGene(se)
+gse_scaled <-summarizeToGene(se, countsFromAbundance = "lengthScaledTPM")
+
 
 ## Arrangement des facteurs
 gse$condition %<>% factor()

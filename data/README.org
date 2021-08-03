@@ -1,3 +1,5 @@
 * Provenance of data
 GEO Accession : GSE119606
 Paper PMID :  30539787
+* Provenance of pre-built index
+refgenie hg38 ([[http://refgenomes.databio.org/v3/genomes/splash/2230c535660fb4774114bfa966a62f823fdb6d21acf138d4][link]]), =salmon_partial_sa_index:default= chosen, mostly for size issues. 

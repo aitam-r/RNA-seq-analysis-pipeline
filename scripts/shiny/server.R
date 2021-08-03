@@ -4,9 +4,9 @@ server <- function(input, output, session) {
   my_values <- reactiveValues()
   
   #The table of genes, displayed on DEG panel
-  gene_table <- reactive({
+  gene_table <- eventReactive(my_values$res, {
     my_values$res[order(my_values$res$padj), ] %>% 
-      as.data.frame() %>% #or assay()?
+      as.data.frame() %>% 
       filter(padj < input$pval_cutoff, 
              log2FoldChange > input$lfc_cutoff | log2FoldChange < -input$lfc_cutoff) %>%
       #Significant digits
@@ -14,7 +14,7 @@ server <- function(input, output, session) {
   })
   
   #The button to run DESeqDataSet, DESeq, results
-  observeEvent(input$execute, {
+  observeEvent(input$execute_d, {
     req(input$variables)
     req(input$compare_cond)
     gse$condition %<>% relevel(input$base_cond)
@@ -33,6 +33,7 @@ server <- function(input, output, session) {
                              contrast = c(input$variables[1], input$compare_cond, input$base_cond))
     
     #Adding gene names
+    # /!\/!\ should look at duplicates and is.na to look for lack of info
     ens.str <- substr(rownames(my_values$res), 1, 15)
     my_values$res$symbol <- mapIds(org.Hs.eg.db,
                                    keys=ens.str,
@@ -42,8 +43,27 @@ server <- function(input, output, session) {
     
   })
   
+  observeEvent(input$explore_w, {
+    #using bias corrected counts (without an offset)
+    raw_counts <- assay(gse_scaled, "counts") %>% round()
+    # Remove non-expressed genes
+    raw_counts <- raw_counts[rowSums(raw_counts) > 0,]
+    
+    # Calculate upper quartile value (not taking into account 0s by sample)
+    quantile_expressed <- apply(raw_counts, 
+                                2, 
+                                function(x){quantile(x[x>0], 0.75)})
+    # Divide each column by its upper quartile value
+    my_values$counts_norm <- t(raw_counts)/quantile_expressed
+  })
+  
+  observeEvent(input$rm_sample, {
+    my_values$counts_norm <- 
+      my_values$counts_norm[!(rownames(my_values$counts_norm) %in% input$rm_sample),]
+  })
   
   output$dist <- renderPlot({
+    req(my_values$rld)
     sampleDists <- my_values$rld %>%
       assay() %>%
       t() %>%
@@ -60,19 +80,23 @@ server <- function(input, output, session) {
   })
   
   output$pca <- renderPlot({
+    req(my_values$rld)
     plotPCA(my_values$rld)
   })
   
   output$ma <- renderPlot({
+    req(my_values$res)
     plotMA(my_values$res, alpha = 0.05)
   })
   
   
   output$volcano <- renderPlot({
+    req(my_values$res)
     volcanoplot(my_values$res, lfcthresh=1, sigthresh=0.05, textcx=.8, xlim=c(-2.3, 2))
   })
   
   output$nb_genes <- renderText({
+    req(my_values$res)
     req(input$pval_cutoff)
     req(input$lfc_cutoff)
     
@@ -92,6 +116,7 @@ server <- function(input, output, session) {
   })
   
   output$genes <- DT::renderDataTable({
+    req(my_values$res)
     req(input$pval_cutoff)
     req(input$lfc_cutoff)
     gene_table()
@@ -122,9 +147,32 @@ server <- function(input, output, session) {
                     returnData=TRUE)
     ggplot(d, aes(x=condition, y=count)) + 
       geom_point(position=position_jitter(w=0.1,h=0)) + 
-      scale_y_log10(breaks=c(25,100,400))
+      scale_y_log10()
   })
   
+  observeEvent(my_values$counts_norm, {
+    # Update the maximum of gene one can keep
+    # default value of 8 000 genes not to crush computer resources
+    m <- round(8000/ncol(my_values$counts_norm), 1)
+    updateSliderInput(session,
+                      "percent_g",
+                      max = m)
+  })
+  
+  output$outliers <- renderPlot({
+    req(input$explore_w)
+    sampleTree <- hclust(dist(my_values$counts_norm), method = "average")
+    plot(sampleTree, main = "Sample clustering to detect outliers",
+         sub="", xlab="", cex.lab = 1.5,
+         cex.axis = 1.5, cex.main = 2)
+  })
+  
+  output$warning <- renderText({
+    req(my_values$counts_norm)
+    if(nrow(my_values$counts_norm) < 20) {
+      paste("\n", "Warning : The number of samples is too low for WGCNA analyis", "\n")
+    }
+  })
   
   
 }

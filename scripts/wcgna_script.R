@@ -1,7 +1,6 @@
 #setwd("~/Documents/Collaborations/Mariana_Franck/______NEW ANALYSIS/WGCNA")
 
 library(WGCNA)
-library(flashClust)
 library(gplots)
 library(ggplot2)
 
@@ -23,13 +22,12 @@ data4<- apply(data3, 2, as.numeric)
 
 dat = as.data.frame(t(countdata[, c(2)]))
 datExpr = dat[index]
-#View(datExpr)
 head(datExpr)
 dim(datExpr)
 
-powers = c(c(1:20), seq(from = 12, to=20, by=2))# in practice this should include powers up to 20.
+powers = 1:20 # in practice this should include powers up to 20.
 sft<- pickSoftThreshold(data4,dataIsExpr = TRUE,
-                        powerVector = powers,corFnc = cor,
+                        powerVector = powers,
                         corOptions = list(use = 'p'),networkType = "signed hybrid")
 
 
@@ -54,7 +52,7 @@ TOM=TOMsimilarityFromExpr(data4,networkType = "signed hybrid", TOMType = "signed
 colnames(TOM) =rownames(TOM) = datExpr
 dissTOM=1-TOM
 #Hierarchical clustering of the genes based on the TOM dissimilarity measure
-geneTree = flashClust(as.dist(dissTOM),method="average")
+geneTree = hclust(as.dist(dissTOM),method="average")
 #Plot the resulting clustering tree (dendrogram)
 plot(geneTree, xlab="", sub="",cex=0.0013)
 
@@ -72,6 +70,9 @@ table(dynamicMods[[1]])
 merged <- mergeCloseModules(exprData = data4,colors =dynamicMods$labels ,
                             cutHeight = dthresh)
 summary(merged)
+
+
+# Read till Here ------------------------------------------------------------------
 
 mColorh <- labels2colors(merged$colors)
 mLabelh <- "DS=2,MMS=200,DCOR=0.15"
@@ -103,6 +104,9 @@ dev.off()
 restGenes= (dynamicColors != "grey")
 diss1=1-TOMsimilarityFromExpr(data4[,restGenes], power = softPower)
 collectGarbage()
+
+
+
 
 colnames(diss1) =rownames(diss1) = datExpr[restGenes]
 hier1=flashClust(as.dist(diss1), method="average" )
