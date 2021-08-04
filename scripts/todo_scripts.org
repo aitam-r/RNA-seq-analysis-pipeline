@@ -16,29 +16,29 @@
 - [X] Why export =volcanoplot= to postcript aaaah
 - [X] Where are the =$treatment= and =$patient= coming from?
 - [ ] Is there no better standard way to plot distance between samples? see MSMB
-
-*** DONE Adaptation [4/4]
+ 
+*** DONE Adaptation [4/4]  [2021-08-04 Wed]
 - [X] Interface the beginning with =salmon= via =tximeta= in order to annotate and de-normalize the data for =DESeq2=.
 - [X] Make all the plots export to svg/png in a dedicated analysis subfolder, for further analysis/evaluation
 - [X] On the same note, do the same with the =.csv= output, but maybe in data?
 - [X] Install relevant packages
- [2021-08-04 Wed]
+
 
  
-** TODO R WGCNA scripts [5/9]
-- [ ] Clean up Soham's code
+** DONE R WGCNA scripts [8/8][2021-08-04 Wed]
+- [X] Clean up Soham's code
 - [X] Run GWENA on some samples? Or do only WGCNA?
 - [X] Figure out what at which point to get normalized counts (and nothing else) from my pipeline :
   The problem is that DESeq2 takes un-normalized counts, salmon provides normalized counts : =counts(dds, normalized = TRUE)= provides DESeq2-normalized counts.
-- [ ] Integrate the basic analysis into shiny
+- [X] Integrate the basic analysis into shiny
 - [X] Compare functional enrichment across %tages of filtered genes
 - [X] A subset of genes is selected (else it is too resource-intensive), the highest-variance ones. However, we've seen that there is a mean-variance relationship in count data. So our selection is biased towards highly expressed genes (is that bad?), unless we use a variance stabilizing transformation.
 - [X] Pre-screen data to eliminate outlier samples!
-- [ ] Put a warning on sample count
-- [ ] Allow choosing of type of network
+- [X] Put a warning on sample count
 
 
-** TODO shiny [10/17]
+
+** TODO shiny [13/14]
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
 - [X] logFoldChange and p-value cutoffs (on sliders?)
@@ -51,18 +51,19 @@
 - [X] Show number of up/downregultaed genes at current thresholds
 - [X] Show gene names (after an annotation)
 - [X] Plot particular genes (could be hard) could use function =selectize=, but it could be slow
-- [ ] Draw a MAplot, add possibility to choose shrunken fold changes
-- [ ] Choose what to highlight in the PCA =intgroups=, maybe is only interesting if multiple variables
-- [ ] Show only potential variables (not names and files)
-- [ ] Allow brush to select some genes on the Maplot? Useful?
-- [ ] Add a  =fileInput= to enter the coldata information?
-- [ ] See that the figures scale better
-- [ ] Add a possibility to download only DEGs names for ORA, or w/ lfc for GSEA?
+- [X] Add selection of enrichment sources
+- [X] Show only potential variables (not names and files)
+- [X] Allow choosing of type of network
+- [ ] Plotting :
+  - [ ] Draw a MAplot, add possibility to choose shrunken fold changes
+  - [ ] Choose what to highlight in the PCA =intgroups=, maybe is only interesting if multiple variables
+  - [ ] Allow brush to select some genes on the Maplot? Useful?
+  - [ ] Add a  =fileInput= to enter the coldata information?
+  - [ ] See that the figures scale better
 
 
-**  TODO Other scripts [1/3]
-- [ ] Create heuristics to detect the file containing the SRA accession numbers?
-- [ ] Add an automatic download of the index from refgenie
+**  TODO Other scripts [1/2]
+- [ ] Add an automatic download of the index from refgenie with the snakefile
 - [X] Add refgenie to the mamba environment
 
   

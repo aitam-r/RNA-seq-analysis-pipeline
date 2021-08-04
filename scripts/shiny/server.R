@@ -67,6 +67,27 @@ server <- function(input, output, session) {
                                 input$rm_sample),]
   })
   
+  observeEvent(input$build, {
+    withProgress(message = "Building network", {
+      my_values$net <- build_net(my_values$counts_filt,
+                                 cor_func = "spearman",
+                                 power_value = input$sft_thres,
+                                 network_type = isolate(input$type_net),
+                                 n_threads = 1)
+    })
+    withProgress(message = "Detecting Modules", {
+      my_values$modules <- detect_modules(my_values$counts_filt,
+                                          my_values$net$network,
+                                          detailled_result = T)
+    })
+    
+    withProgress(message = "Performing Enrichment", {
+      my_values$modules_enriched <- bio_enrich(my_values$modules$modules,
+                                               organism = "hsapiens",
+                                               sources = input$sources)
+    })
+  })
+  
   output$dist <- renderPlot({
     req(my_values$rld)
     sampleDists <- my_values$rld %>%
@@ -109,11 +130,13 @@ server <- function(input, output, session) {
     req(input$pval_cutoff)
     req(input$lfc_cutoff)
     
+    # upregulated genes
     up <- my_values$res %>% 
       as.data.frame() %>% 
       filter(padj < input$pval_cutoff, log2FoldChange > input$lfc_cutoff) %>%
       nrow()
-    
+
+    # downregulated genes
     down <- my_values$res %>% 
       as.data.frame() %>%
       filter(padj < input$pval_cutoff, log2FoldChange < -input$lfc_cutoff) %>%
@@ -202,10 +225,10 @@ server <- function(input, output, session) {
     pwr_vec <- c(1:9, seq(10, 30, by = 2)) 
     withProgress(message = "Calculating", {
       isolate(sft <- WGCNA::pickSoftThreshold(my_values$counts_filt,
-                                      powerVector = pwr_vec,
-                                      corFnc = WGCNA::cor,
-                                      corOptions = list(method = "spearman"),
-                                      networkType = "signed hybrid"))
+                                              powerVector = pwr_vec,
+                                              corFnc = WGCNA::cor,
+                                              corOptions = list(method = "spearman"),
+                                              networkType = input$type_net))
     })
     if(is.na(sft$powerEstimate)) {
       max_pow <- max(sft$fitIndices[, "Power"])
@@ -221,5 +244,24 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  observe({
+    updateSelectizeInput(session,
+                         inputId = "select_mod", 
+                         choices = names(my_values$modules$modules),
+                         # To select the first module
+                         selected = names(my_values$modules$modules)[2],
+                         server = TRUE)
+  })
+  
+   
+   output$Enrichment <- renderPlotly({
+     req(my_values$modules_enriched)
+     plot_enrichment(my_values$modules_enriched,
+                     modules = input$select_mod)
+                     
+     
+   })
+   
   
 }

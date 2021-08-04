@@ -79,5 +79,4 @@ get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
 
 # Preliminary code ---------------------------------------------------------------
 load("txidata.RData")
-
-
+enr_sources <- c("GO", "KEGG", "REAC", "TF", "MIRNA", "CORUM", "HP", "HPA", "WP")
