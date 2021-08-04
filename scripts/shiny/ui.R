@@ -82,6 +82,7 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                br(),
                                actionButton(inputId = "explore_w",
                                             label = "Explore Samples"),
+                               br(),br(),
                                
                                selectizeInput(inputId = "rm_sample",
                                               label = "Choose which sample to exclude : ",
@@ -93,7 +94,21 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                            label = "Percentage of filtered genes, based on variation",
                                            value = 0.1,
                                            min = 0.1,
-                                           max = 0.2)
+                                           max = 0.2,
+                                           step = 0.05),
+                               
+                               actionButton(inputId = "update_sft",
+                                            label = "Update Power Picked"),
+                               
+                               br(), br(),
+                               textOutput("threshold"),
+                               br(),
+                               
+                               numericInput(inputId = "sft_thres", 
+                                            label = "Pick soft threshold",
+                                            min = 1,
+                                            max = 30,
+                                            value = 6)
                              ),
                              mainPanel(
                                plotOutput("outliers")

@@ -100,8 +100,9 @@ rld_pca <- function (rld, intgroup = "condition", ntop = 500, colors=NULL,
   plot(PC2~PC1, data=as.data.frame(pca$x), bg=colors[fac], pch=21,
        xlab=pc1lab, ylab=pc2lab, main=main, ...)
   with(as.data.frame(pca$x), textxy(PC1, PC2,
-                                    labs=rownames(as.data.frame(pca$x)), cex=textcx))
-  legend(legendpos, legend=levels(fac), col=colors, pch=20)             
+                                    labs=rownames(as.data.frame(pca$x)),
+                                    cex=textcx))
+  legend(legendpos, legend=levels(fac), col=colors, pch=20)
 }
 
 png(file.path(image_dir,"qc-pca.png"), 1000, 1000, pointsize=20)
@@ -141,7 +142,7 @@ res_P_T <- results(dds, contrast = c("condition", "PDGF_BB", "TGF_beta"))
 #             I used GRCH38 and not hg19 as in the paper
 
 #Annotation (not sure it works well)
-ens.str <- substr(rownames(res_TGF), 1, 15)
+ens.str <- substr(rownames(res_TGF), 1, 15) # nolint
 res_TGF$symbol <- res_PDGF$symbol <- 
   res_P_T$symbol <- mapIds(org.Hs.eg.db,
                      keys=ens.str,

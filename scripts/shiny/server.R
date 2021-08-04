@@ -8,18 +8,21 @@ server <- function(input, output, session) {
     my_values$res[order(my_values$res$padj), ] %>% 
       as.data.frame() %>% 
       filter(padj < input$pval_cutoff, 
-             log2FoldChange > input$lfc_cutoff | log2FoldChange < -input$lfc_cutoff) %>%
+             log2FoldChange > input$lfc_cutoff |
+             log2FoldChange < -input$lfc_cutoff) %>%
       #Significant digits
       mutate(across(where(is.numeric), signif, 3))
   })
-  
+
   #The button to run DESeqDataSet, DESeq, results
   observeEvent(input$execute_d, {
     req(input$variables)
     req(input$compare_cond)
     gse$condition %<>% relevel(input$base_cond)
     my_values$dds <- DESeqDataSet(gse, 
-                                  design = paste("~ ", paste(input$variables, collapse = " + ")) %>% 
+                                  design = paste("~ ",
+                                                 paste(input$variables,
+                                                       collapse = " + ")) %>% 
                                     as.formula())
     #filtering
     keep <- rowSums(counts(my_values$dds)) > 1 
@@ -30,7 +33,8 @@ server <- function(input, output, session) {
     
     #temporary first element of contrast /!\
     my_values$res <- results(my_values$dds,
-                             contrast = c(input$variables[1], input$compare_cond, input$base_cond))
+                             contrast = c(input$variables[1],
+                                          input$compare_cond, input$base_cond))
     
     #Adding gene names
     # /!\/!\ should look at duplicates and is.na to look for lack of info
@@ -59,7 +63,8 @@ server <- function(input, output, session) {
   
   observeEvent(input$rm_sample, {
     my_values$counts_norm <- 
-      my_values$counts_norm[!(rownames(my_values$counts_norm) %in% input$rm_sample),]
+        my_values$counts_norm[!(rownames(my_values$counts_norm) %in%
+                                input$rm_sample),]
   })
   
   output$dist <- renderPlot({
@@ -92,7 +97,11 @@ server <- function(input, output, session) {
   
   output$volcano <- renderPlot({
     req(my_values$res)
-    volcanoplot(my_values$res, lfcthresh=1, sigthresh=0.05, textcx=.8, xlim=c(-2.3, 2))
+    volcanoplot(my_values$res,
+                lfcthresh=1,
+                sigthresh=0.05,
+                textcx=.8,
+                xlim=c(-2.3, 2))
   })
   
   output$nb_genes <- renderText({
@@ -101,7 +110,7 @@ server <- function(input, output, session) {
     req(input$lfc_cutoff)
     
     up <- my_values$res %>% 
-      as.data.frame() %>% #Or assay()
+      as.data.frame() %>% 
       filter(padj < input$pval_cutoff, log2FoldChange > input$lfc_cutoff) %>%
       nrow()
     
@@ -110,7 +119,8 @@ server <- function(input, output, session) {
       filter(padj < input$pval_cutoff, log2FoldChange < -input$lfc_cutoff) %>%
       nrow()
     
-    paste("There are ", up, " significantly upregulated genes", " and there are ",
+    paste("There are ", up,
+          " significantly upregulated genes", " and there are ",
           down, "significantly downregulated genes", "at a p-value of", 
           input$pval_cutoff, " and a LFC of ", input$lfc_cutoff)
   })
@@ -159,6 +169,13 @@ server <- function(input, output, session) {
                       max = m)
   })
   
+  observeEvent(input$percent_g, {
+    req(my_values$counts_norm)
+    my_values$counts_filt <- filter_low_var(my_values$counts_norm,
+                                            pct = input$percent_g,
+                                            type = "median")
+  })
+  
   output$outliers <- renderPlot({
     req(input$explore_w)
     sampleTree <- hclust(dist(my_values$counts_norm), method = "average")
@@ -170,7 +187,37 @@ server <- function(input, output, session) {
   output$warning <- renderText({
     req(my_values$counts_norm)
     if(nrow(my_values$counts_norm) < 20) {
-      paste("\n", "Warning : The number of samples is too low for WGCNA analyis", "\n")
+      paste("\n", "Warning : The number of samples is too low for WGCNA analyis.", "\n")
+    }
+  })
+  
+  output$threshold <- renderText({
+    req(my_values$counts_filt)
+    
+    # Rerun when button is clicked
+    # But do not run when not clicked
+    if(input$update_sft == 0)
+      return()
+    
+    pwr_vec <- c(1:9, seq(10, 30, by = 2)) 
+    withProgress(message = "Calculating", {
+      isolate(sft <- WGCNA::pickSoftThreshold(my_values$counts_filt,
+                                      powerVector = pwr_vec,
+                                      corFnc = WGCNA::cor,
+                                      corOptions = list(method = "spearman"),
+                                      networkType = "signed hybrid"))
+    })
+    if(is.na(sft$powerEstimate)) {
+      max_pow <- max(sft$fitIndices[, "Power"])
+      paste("WGCNA's pickSoftThreshold did not find an optimal power value.",
+            "Max SFT.R.sq :  ",
+            round(sft$fitIndices[sft$fitIndices$Power == max_pow, "SFT.R.sq"],2),
+            " Power : ", max_pow) 
+    } else {
+      paste("WGCNA's pickSoftThreshold recommends a power threshold of ",
+            sft$powerEstimate,
+            "which corresponds to a R squared for SFT of ",
+            round(sft$fitIndices[sft$fitIndices$Power == sft$powerEstimate, "SFT.R.sq"],2)) 
     }
   })
   
