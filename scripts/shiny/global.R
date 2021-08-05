@@ -19,17 +19,17 @@ library(GWENA)
 library(gprofiler2)
 library(plotly)
 library(cluster)
+library(shinyvalidate)
 
 # Functions ----------------------------------------------------------------------
 
-volcanoplot <- function (res, lfcthresh=2, sigthresh=0.05, main="Volcano Plot", legendpos="bottomright", labelsig=TRUE, textcx=1, ...) {
-  with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main=main, ...))
-  with(subset(res, padj<sigthresh ), points(log2FoldChange, -log10(pvalue), pch=20, col="red", ...))
-  with(subset(res, abs(log2FoldChange)>lfcthresh), points(log2FoldChange, -log10(pvalue), pch=20, col="orange", ...))
-  with(subset(res, padj<sigthresh & abs(log2FoldChange)>lfcthresh), points(log2FoldChange, -log10(pvalue), pch=20, col="green", ...))
-  legend(legendpos, xjust=1, yjust=1, legend=c(paste("FDR<",sigthresh,sep=""), paste("|LogFC|>",lfcthresh,sep=""), "both"), pch=20, col=c("red","orange","green"))
+volcanoplot <- function(res, lfcthresh = 2, sigthresh = 0.05, main = "Volcano Plot", legendpos = "bottomright", labelsig = TRUE, textcx = 1, ...) {
+    with(res, plot(log2FoldChange, -log10(pvalue), pch = 20, main = main, ...))
+    with(subset(res, padj < sigthresh), points(log2FoldChange, -log10(pvalue), pch = 20, col = "red", ...))
+    with(subset(res, abs(log2FoldChange) > lfcthresh), points(log2FoldChange, -log10(pvalue), pch = 20, col = "orange", ...))
+    with(subset(res, padj < sigthresh & abs(log2FoldChange) > lfcthresh), points(log2FoldChange, -log10(pvalue), pch = 20, col = "green", ...))
+    legend(legendpos, xjust = 1, yjust = 1, legend = c(paste("FDR<", sigthresh, sep = ""), paste("|LogFC|>", lfcthresh, sep = ""), "both"), pch = 20, col = c("red", "orange", "green"))
 }
-
 get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
                              ...) {
   # Checking args
@@ -42,7 +42,6 @@ get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
     stop("seq_k must contain only whole numbers >= 1")
   if(!is.logical(fit_plot))
     stop("fit_plot must be a boolean")
-  
   # Computing the k-medoid
   list_k_tests <- lapply(seq_k, function(k) {
     k_res <- cluster::pam(network, k, diss = TRUE, ...)

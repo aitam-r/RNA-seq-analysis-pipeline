@@ -24,11 +24,14 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
                                         label = "Run DESeq2")
                   ),
                   
-                  tabPanel("Sample-to-sample distances", plotOutput(outputId = "dist")),
+                  tabPanel("Sample-to-sample distances", 
+                           plotOutput(outputId = "dist")),
                   
-                  tabPanel("PCA", plotOutput(outputId = "pca")),
+                  tabPanel("PCA", 
+                           plotOutput(outputId = "pca")),
                   
-                  tabPanel("MAplot", plotOutput(outputId = "ma")),
+                  tabPanel("MAplot", 
+                           plotOutput(outputId = "ma")),
                   
                   tabPanel("Volcano Plot", plotOutput(outputId = "volcano")),
                   
@@ -130,7 +133,11 @@ ui <- fluidPage(theme = shinytheme("cosmo"),
 
                              ),
                              mainPanel(
-                               plotOutput("outliers")
+                               plotOutput("outliers"),
+                               br(),
+                               h2("WGCNA's pickSoftThreshold fitIndices table :"),
+                               tableOutput(outputId = "sft_table")
+                               
                              )
                            )
                   ),

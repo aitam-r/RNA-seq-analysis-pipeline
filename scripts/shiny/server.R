@@ -1,6 +1,12 @@
 server <- function(input, output, session) {
   
-  #An object to store everything
+  # add an object to check user keyboard input
+  iv <- InputValidator$new()
+   # Validate the input of sft_thres
+  iv$add_rule("sft_thres", sv_between(left = 1, right = 30))
+  iv$enable()
+ 
+  # An object to store everything
   my_values <- reactiveValues()
   
   #The table of genes, displayed on DEG panel
@@ -19,7 +25,7 @@ server <- function(input, output, session) {
     req(input$variables)
     req(input$compare_cond)
     gse$condition %<>% relevel(input$base_cond)
-    my_values$dds <- DESeqDataSet(gse, 
+    withProgress(message = "Running DESeq2",{my_values$dds <- DESeqDataSet(gse, 
                                   design = paste("~ ",
                                                  paste(input$variables,
                                                        collapse = " + ")) %>% 
@@ -43,7 +49,7 @@ server <- function(input, output, session) {
                                    keys=ens.str,
                                    column="SYMBOL",
                                    keytype="ENSEMBL",
-                                   multiVals="first")
+                                   multiVals="first")})
     
   })
   
@@ -66,7 +72,8 @@ server <- function(input, output, session) {
         my_values$counts_norm[!(rownames(my_values$counts_norm) %in%
                                 input$rm_sample),]
   })
-  
+ 
+   
   observeEvent(input$build, {
     withProgress(message = "Building network", {
       my_values$net <- build_net(my_values$counts_filt,
@@ -98,7 +105,7 @@ server <- function(input, output, session) {
     rownames(sampleDistMatrix) <- my_values$rld$condition
     colnames(sampleDistMatrix) <- NULL
     
-    colors <- colorRampPalette( rev(brewer.pal(9, "Purples")) )(255)
+    colors <- colorRampPalette(rev(brewer.pal(9, "Purples")) )(255)
     pheatmap(sampleDistMatrix,
              clustering_distance_rows=sampleDists,
              clustering_distance_cols=sampleDists,
@@ -192,7 +199,7 @@ server <- function(input, output, session) {
                       max = m)
   })
   
-  observeEvent(input$percent_g, {
+  observe({
     req(my_values$counts_norm)
     my_values$counts_filt <- filter_low_var(my_values$counts_norm,
                                             pct = input$percent_g,
@@ -221,30 +228,38 @@ server <- function(input, output, session) {
     # But do not run when not clicked
     if(input$update_sft == 0)
       return()
-    
+   isolate({ 
     pwr_vec <- c(1:9, seq(10, 30, by = 2)) 
     withProgress(message = "Calculating", {
-      isolate(sft <- WGCNA::pickSoftThreshold(my_values$counts_filt,
+      my_values$sft <- WGCNA::pickSoftThreshold(my_values$counts_filt,
                                               powerVector = pwr_vec,
                                               corFnc = WGCNA::cor,
                                               corOptions = list(method = "spearman"),
-                                              networkType = input$type_net))
+                                              networkType = input$type_net)
     })
-    if(is.na(sft$powerEstimate)) {
-      max_pow <- max(sft$fitIndices[, "Power"])
+    if(is.na(my_values$sft$powerEstimate)) {
+      max_pow <- max(my_values$sft$fitIndices[, "Power"])
       paste("WGCNA's pickSoftThreshold did not find an optimal power value.",
             "Max SFT.R.sq :  ",
-            round(sft$fitIndices[sft$fitIndices$Power == max_pow, "SFT.R.sq"],2),
+            round(my_values$sft$fitIndices[my_values$sft$fitIndices$Power == max_pow, "SFT.R.sq"],2),
             " Power : ", max_pow) 
     } else {
       paste("WGCNA's pickSoftThreshold recommends a power threshold of ",
-            sft$powerEstimate,
+            my_values$sft$powerEstimate,
             "which corresponds to a R squared for SFT of ",
-            round(sft$fitIndices[sft$fitIndices$Power == sft$powerEstimate, "SFT.R.sq"],2)) 
+            round(my_values$sft$fitIndices[my_values$sft$fitIndices$Power ==
+                                             my_values$sft$powerEstimate, "SFT.R.sq"],2))
     }
+    })
   })
   
+  output$sft_table <- renderTable({
+    req(my_values$sft)
+    return(my_values$sft$fitIndices %>% as.data.frame())},
+    striped = TRUE,
+    bordered = TRUE)
   
+   
   observe({
     updateSelectizeInput(session,
                          inputId = "select_mod", 
@@ -257,10 +272,11 @@ server <- function(input, output, session) {
    
    output$Enrichment <- renderPlotly({
      req(my_values$modules_enriched)
+     # Plot only if there is something to plot
+     if(input$select_mod %in% my_values$modules_enriched$result$query) {
      plot_enrichment(my_values$modules_enriched,
                      modules = input$select_mod)
-                     
-     
+     }
    })
    
   
