@@ -1,160 +1,34 @@
+# Sources ----
+source("ui_deseq2.R", local = TRUE)
+source("ui_wgcna.R", local = TRUE)
+
 # UI -----------------------------------------------------------------------------
 
-ui <- fluidPage(theme = shinytheme("cosmo"),
-                navbarPage(
-                  title = "My little app",
-                  tabPanel("DESeq Set-up",
-                           #Choose the experimental design
-                           selectInput(inputId = "variables",
-                                       label = "Choose the variables of the experimental design :",
-                                       choices = colnames(coldata %>% select(-names, -files)),
-                                       multiple = T),
-                           
-                           # Choose base level for condition
-                           selectInput(inputId = "base_cond",
-                                       label = "Choose the base condition :",
-                                       choices = levels(gse$condition)),
-                           
-                           # Choose base level for condition
-                           selectInput(inputId = "compare_cond",
-                                       label = "Choose the condition to compare with:",
-                                       choices = levels(gse$condition)),
-                           
-                           actionButton(inputId = "execute_d",
-                                        label = "Run DESeq2")
-                  ),
-                  
-                  tabPanel("Sample-to-sample distances", 
-                           plotOutput(outputId = "dist")),
-                  
-                  tabPanel("PCA", 
-                           plotOutput(outputId = "pca")),
-                  
-                  tabPanel("MAplot", 
-                           plotOutput(outputId = "ma")),
-                  
-                  tabPanel("Volcano Plot", plotOutput(outputId = "volcano")),
-                  
-                  tabPanel("Most DEGs",
-                           sidebarLayout(
-                             
-                             sidebarPanel(
-                               numericInput(inputId = "pval_cutoff",
-                                            label = "Enter the maximum p-value :",
-                                            value = 0.05,
-                                            min = 0,
-                                            max = 1,
-                                            step = .05),
-                               
-                               numericInput(inputId = "lfc_cutoff",
-                                            label = "Enter the minimum (absolute) logFoldChange :",
-                                            value = 1,
-                                            min = 0)
-                             ),
-                             
-                             mainPanel(
-                               
-                               textOutput(outputId = "nb_genes"),
-                               br(),
-                               DT::dataTableOutput(outputId = "genes"),
-                               
-                               downloadButton(outputId = "download",
-                                              label = "Download table")
-                             )
-                           )
-                  ),
-                  
-                  tabPanel("Plot Gene Count", 
-                           sidebarLayout(
-                             sidebarPanel(
-                               selectizeInput(inputId = "sel_gene",
-                                              label = "Select which gene to plot :",
-                                              choices = NULL)
-                             ),
-                             mainPanel(
-                               plotOutput(outputId = "plot_gene")
-                             )
-                           )
-                  ),
-                  tabPanel("WGCNA Set-up",
-                           sidebarLayout(
-                             
-                             sidebarPanel(
-                               br(),
-                               # Warning on the number of samples
-                               textOutput(outputId = "warning"),
-                               br(),
-                               actionButton(inputId = "explore_w",
-                                            label = "Explore Samples"),
-                               br(),br(),
-                               
-                               selectizeInput(inputId = "rm_sample",
-                                              label = "Choose samples to exclude : ",
-                                              choices = coldata$names,
-                                              multiple = T,
-                                              options = list(maxItems = length(coldata$names) - 3)),
-                               
-                               # Selects the top value % of variable genes. 
-                               # Max is dependent on a max number of genes (8000)
-                               sliderInput(inputId = "percent_g",
-                                           label = "Percentage of filtered genes, based on variation",
-                                           value = 0.1,
-                                           min = 0.1,
-                                           max = 0.2,
-                                           step = 0.05),
-                               
-                               selectInput(inputId = "type_net",
-                                           label = "Type of Network",
-                                           choices = c("unsigned", "signed", "signed hybrid"),
-                                           selected = "signed hybrid"),
-                               
-                               actionButton(inputId = "update_sft",
-                                            label = "Update Power Picked"),
-                               
-                               br(), br(),
-                               textOutput("threshold"),
-                               br(),
-                               
-                               numericInput(inputId = "sft_thres", 
-                                            label = "Pick soft threshold",
-                                            min = 1,
-                                            max = 30,
-                                            value = 6),
-                               
-                                                              
-                               selectizeInput(inputId = "sources",
-                                              label = "Select sources for enrichment",
-                                              choices = enr_sources,
-                                              selected = c("GO", "KEGG", "REAC"),
-                                              multiple = TRUE),
-                               
-                               actionButton(inputId = "build",
-                                            label = "Build Network")
-
-                             ),
-                             mainPanel(
-                               plotOutput("outliers"),
-                               br(),
-                               h2("WGCNA's pickSoftThreshold fitIndices table :"),
-                               tableOutput(outputId = "sft_table")
-                               
-                             )
-                           )
-                  ),
-                  
-                  tabPanel("Enrichment",
-                   sidebarLayout(
-                     sidebarPanel(
-                       selectizeInput(inputId = "select_mod",
-                                      label = "Select Module :",
-                                      selected = NULL,
-                                      choices = NULL)
-                     ),
-                     mainPanel(
-                       plotlyOutput("Enrichment")
-                     )
-                   )
-                  )
-                  
-                )
+ui <- dashboardPage(
+  dashboardHeader(title = "My little App"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("DESeq2", tabName = "deseq2",
+               menuSubItem("DESeq2 Set-up", tabName = "deseq2_su"),
+               menuSubItem("Many plots", tabName = "plots"),
+               menuSubItem("DEG table", tabName = "deg"),
+               menuSubItem("Single gene counts", tabName = "sgc")),
+      menuItem("Co-expression Network", tabName = "wgcna",
+               menuSubItem("WGCNA Set-up", tabName = "wgcna_su"),
+               menuSubItem("Enrichment", tabName = "enr"))
+    )
+  ),
+  dashboardBody(
+    shinyDashboardThemes(theme = "poor_mans_flatly"),
+    
+    tabItems(
+      tab_deseq2_su,
+      tab_plots,
+      tab_deg,
+      tab_sgc,
+      tab_wgcna_su,
+      tab_enr
+    )
+  )
 )
+
