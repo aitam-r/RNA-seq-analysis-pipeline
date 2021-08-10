@@ -1,13 +1,13 @@
 * TODO Goals
 ** TODO R DESeq2 scripts
-*** TODO Understanding [3/8]
+*** TODO Understanding [4/8]
 - [ ] Why use padj when there is FDR? Is padj any good?
 - [ ] =filterThreshold=? What is it? Independent filtering?
 - [X] Why take the 20 000 most up/down-regulated genes? Why 20k? Not adaptative to dataset.
 - [X] Why plot again in the analysis (especially =plotMA=?)
 - [ ] What are the bins for (to understand, not to correct)
 - [X] What is rlog transformation file, and why use a log2(1+count) in there, as it is just a worse rlog? It is for a comparison it seems
-- [ ] Why sometimes =pheatmap=, sometimes =heatmap.2=?
+- [X] Why sometimes =pheatmap=, sometimes =heatmap.2=?
 - [ ] Investigate difference between GENCODE and Ensemble gene names, regarding issues with "duplicate genes on haplotype chromosomes"
 
 *** DONE Correction [5/5] [2021-08-04 Wed]
@@ -38,7 +38,7 @@
 
 
 
-** TODO shiny [13/16]
+** TODO shiny [13/22]
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
 - [X] logFoldChange and p-value cutoffs (on sliders?)
@@ -54,7 +54,7 @@
 - [X] Add selection of enrichment sources
 - [X] Show only potential variables (not names and files)
 - [X] Allow choosing of type of network
-- [ ] Check that pickstfthreshold only updates after a button prompt, but not the change of percent_g
+- [ ] Check that pickstfthreshold only updates after a button prompt, but not the change of percent_
 - [ ] Running WGCNA without exploring samples bricks the app
 - [ ] Plotting :
   - [ ] Draw a MAplot, add possibility to choose shrunken fold changes
@@ -62,6 +62,12 @@
   - [ ] Allow brush to select some genes on the Maplot? Useful?
   - [ ] Add a  =fileInput= to enter the coldata information?
   - [ ] See that the figures scale better
+- [ ] Look at annotating with tximport, and using GENCODE intead of ENSEMBL
+- [ ] Barplot for gene counts with error bar
+- [ ] Use shinydashboard to make things look pretty
+- [ ] Make ~my_values$res~ from an ~eventReactive~
+- [ ] Add a shinyvalidate on the base/compare conditions, they need to be different
+- [ ] Check the c(input, input, value) are okay relative to logic.
 
 
 **  TODO Other scripts [1/2]

@@ -6,12 +6,12 @@ server <- function(input, output, session) {
   iv$add_rule("sft_thres", sv_between(left = 1, right = 30))
   iv$enable()
  
-  # An object to store everything
-  my_values <- reactiveValues()
+  # Object to store reactives that can change
+  my_values <- reactiveValues(res = NULL, counts_norm = NULL, counts_filt = NULL)
   
   #The table of genes, displayed on DEG panel
-  gene_table <- eventReactive(my_values$res, {
-    my_values$res[order(my_values$res$padj), ] %>% 
+  gene_table <- eventReactive(my_values$res(), {
+    my_values$res()[order(my_values$res()$padj), ] %>% 
       as.data.frame() %>% 
       filter(padj < input$pval_cutoff, 
              log2FoldChange > input$lfc_cutoff |
@@ -21,36 +21,41 @@ server <- function(input, output, session) {
   })
 
   #The button to run DESeqDataSet, DESeq, results
-  observeEvent(input$execute_d, {
+  dds <- eventReactive(input$execute_d, {
     req(input$variables)
     req(input$compare_cond)
     gse$condition %<>% relevel(input$base_cond)
-    withProgress(message = "Running DESeq2",{my_values$dds <- DESeqDataSet(gse, 
+    withProgress(message = "Running DESeq2", {
+      tmp <- DESeqDataSet(gse, 
                                   design = paste("~ ",
                                                  paste(input$variables,
                                                        collapse = " + ")) %>% 
                                     as.formula())
     #filtering
-    keep <- rowSums(counts(my_values$dds)) > 1 
-    my_values$dds <- DESeq(my_values$dds[keep,])
-    
-    
-    my_values$rld <- rlogTransformation(my_values$dds)
-    
+    keep <- rowSums(counts(tmp)) > 1 
+    DESeq(tmp[keep,])
+    })
+  })
+  
+  rld <- eventReactive(dds(), {
+    rlog(dds())
+  })
+  
+  my_values$res <- eventReactive(dds(), {
     #temporary first element of contrast /!\
-    my_values$res <- results(my_values$dds,
-                             contrast = c(input$variables[1],
-                                          input$compare_cond, input$base_cond))
+    tmp <- results(dds(),
+                   contrast = c(input$variables[1],
+                                input$compare_cond, input$base_cond))
     
     #Adding gene names
     # /!\/!\ should look at duplicates and is.na to look for lack of info
-    ens.str <- substr(rownames(my_values$res), 1, 15)
-    my_values$res$symbol <- mapIds(org.Hs.eg.db,
-                                   keys=ens.str,
-                                   column="SYMBOL",
-                                   keytype="ENSEMBL",
-                                   multiVals="first")})
-    
+    ens.str <- substr(rownames(tmp), 1, 15)
+    tmp$symbol <- mapIds(org.Hs.eg.db,
+                         keys=ens.str,
+                         column="SYMBOL",
+                         keytype="ENSEMBL",
+                         multiVals="first")
+    tmp
   })
   
   observeEvent(input$explore_w, {
@@ -73,36 +78,42 @@ server <- function(input, output, session) {
                                 input$rm_sample),]
   })
  
-   
-  observeEvent(input$build, {
+  
+  net <- eventReactive(input$build, {
     withProgress(message = "Building network", {
-      my_values$net <- build_net(my_values$counts_filt,
-                                 cor_func = "spearman",
-                                 power_value = input$sft_thres,
-                                 network_type = isolate(input$type_net),
-                                 n_threads = 1)
+      build_net(my_values$counts_filt,
+                cor_func = "spearman",
+                power_value = input$sft_thres,
+                network_type = isolate(input$type_net),
+                n_threads = 1)
     })
+  })
+  modules <- eventReactive(net(), {
     withProgress(message = "Detecting Modules", {
-      my_values$modules <- detect_modules(my_values$counts_filt,
-                                          my_values$net$network,
-                                          detailled_result = T)
-    })
-    
-    withProgress(message = "Performing Enrichment", {
-      my_values$modules_enriched <- bio_enrich(my_values$modules$modules,
-                                               organism = "hsapiens",
-                                               sources = input$sources)
+      detect_modules(my_values$counts_filt,
+                     net()$network,
+                     detailled_result = T)
     })
   })
   
+  modules_enriched <- eventReactive({
+    modules()
+    input$sources}, { 
+      withProgress(message = "Performing Enrichment", {
+        bio_enrich(modules()$modules,
+                   organism = "hsapiens",
+                   sources = input$sources)
+      })
+    })
+  
   output$dist <- renderPlot({
-    req(my_values$rld)
-    sampleDists <- my_values$rld %>%
+    req(rld())
+    sampleDists <- rld() %>%
       assay() %>%
       t() %>%
       dist()
     sampleDistMatrix <- as.matrix(sampleDists)
-    rownames(sampleDistMatrix) <- my_values$rld$condition
+    rownames(sampleDistMatrix) <- rld()$condition
     colnames(sampleDistMatrix) <- NULL
     
     colors <- colorRampPalette(rev(brewer.pal(9, "Purples")) )(255)
@@ -113,19 +124,19 @@ server <- function(input, output, session) {
   })
   
   output$pca <- renderPlot({
-    req(my_values$rld)
-    plotPCA(my_values$rld)
+    req(rld())
+    plotPCA(rld())
   })
   
   output$ma <- renderPlot({
-    req(my_values$res)
-    plotMA(my_values$res, alpha = 0.05)
+    req(my_values$res())
+    plotMA(my_values$res(), alpha = 0.05)
   })
   
   
   output$volcano <- renderPlot({
-    req(my_values$res)
-    volcanoplot(my_values$res,
+    req(my_values$res())
+    volcanoplot(my_values$res(),
                 lfcthresh=1,
                 sigthresh=0.05,
                 textcx=.8,
@@ -133,18 +144,18 @@ server <- function(input, output, session) {
   })
   
   output$nb_genes <- renderText({
-    req(my_values$res)
+    req(my_values$res())
     req(input$pval_cutoff)
     req(input$lfc_cutoff)
     
     # upregulated genes
-    up <- my_values$res %>% 
+    up <- my_values$res() %>% 
       as.data.frame() %>% 
       filter(padj < input$pval_cutoff, log2FoldChange > input$lfc_cutoff) %>%
       nrow()
 
     # downregulated genes
-    down <- my_values$res %>% 
+    down <- my_values$res() %>% 
       as.data.frame() %>%
       filter(padj < input$pval_cutoff, log2FoldChange < -input$lfc_cutoff) %>%
       nrow()
@@ -156,7 +167,7 @@ server <- function(input, output, session) {
   })
   
   output$genes <- DT::renderDataTable({
-    req(my_values$res)
+    req(my_values$res())
     req(input$pval_cutoff)
     req(input$lfc_cutoff)
     gene_table()
@@ -175,15 +186,15 @@ server <- function(input, output, session) {
     updateSelectizeInput(session,
                          inputId = "sel_gene", 
                          label = "Select which genes to plot :",
-                         choices = as.vector(my_values$res$symbol), 
+                         choices = as.vector(my_values$res()$symbol), 
                          server = TRUE)
   })
   
   
   output$plot_gene <- renderPlot({
     req(input$sel_gene)
-    d <- plotCounts(my_values$dds,
-                    gene=which(my_values$res$symbol == input$sel_gene),
+    d <- plotCounts(dds(),
+                    gene=which(my_values$res()$symbol == input$sel_gene),
                     returnData=TRUE)
     ggplot(d, aes(x=condition, y=count)) + 
       geom_point(position=position_jitter(w=0.1,h=0)) + 
@@ -228,7 +239,6 @@ server <- function(input, output, session) {
     # But do not run when not clicked
     if(input$update_sft == 0)
       return()
-   isolate({ 
     pwr_vec <- c(1:9, seq(10, 30, by = 2)) 
     withProgress(message = "Calculating", {
       my_values$sft <- WGCNA::pickSoftThreshold(my_values$counts_filt,
@@ -236,7 +246,6 @@ server <- function(input, output, session) {
                                               corFnc = WGCNA::cor,
                                               corOptions = list(method = "spearman"),
                                               networkType = input$type_net)
-    })
     if(is.na(my_values$sft$powerEstimate)) {
       max_pow <- max(my_values$sft$fitIndices[, "Power"])
       paste("WGCNA's pickSoftThreshold did not find an optimal power value.",
@@ -263,18 +272,18 @@ server <- function(input, output, session) {
   observe({
     updateSelectizeInput(session,
                          inputId = "select_mod", 
-                         choices = names(my_values$modules$modules),
+                         choices = names(modules()$modules),
                          # To select the first module
-                         selected = names(my_values$modules$modules)[2],
+                         selected = names(modules()$modules)[2],
                          server = TRUE)
   })
   
    
    output$Enrichment <- renderPlotly({
-     req(my_values$modules_enriched)
+     req(modules_enriched())
      # Plot only if there is something to plot
-     if(input$select_mod %in% my_values$modules_enriched$result$query) {
-     plot_enrichment(my_values$modules_enriched,
+     if(input$select_mod %in% modules_enriched()$result$query) {
+     plot_enrichment(modules_enriched(),
                      modules = input$select_mod)
      }
    })
