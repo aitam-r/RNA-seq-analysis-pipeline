@@ -58,6 +58,8 @@ tab_deg <- tabItem("deg",
                        
                        textOutput(outputId = "nb_genes"),
                        br(),
+                       htmlOutput("genes_na"),
+                       br(),
                        DT::dataTableOutput(outputId = "genes"),
                        
                        downloadButton(outputId = "download",
@@ -72,7 +74,16 @@ tab_sgc <- tabItem("sgc",
                      sidebarPanel(
                        selectizeInput(inputId = "sel_gene",
                                       label = "Select which gene to plot :",
-                                      choices = NULL)
+                                      choices = NULL),
+                       
+                       checkboxGroupInput("condition_plot",
+                                          label = "Choose which condition to plot :",
+                                          choices = levels(gse$condition),
+                                          selected = NULL),
+                       
+                       checkboxInput("barplot",
+                                     label = "Barplot with error bars",
+                                     value = FALSE)
                      ),
                      mainPanel(
                        plotOutput(outputId = "plot_gene")

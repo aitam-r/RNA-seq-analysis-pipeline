@@ -33,9 +33,7 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                             actionButton(inputId = "update_sft",
                                          label = "Update Power Picked"),
                             
-                            br(), br(),
-                            textOutput("threshold"),
-                            br(),
+                            br(), br(),br(),
                             
                             numericInput(inputId = "sft_thres", 
                                          label = "Pick soft threshold",
@@ -43,12 +41,7 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                                          max = 30,
                                          value = 6),
                             
-                            
-                            selectizeInput(inputId = "sources",
-                                           label = "Select sources for enrichment",
-                                           choices = enr_sources,
-                                           selected = c("GO", "KEGG", "REAC"),
-                                           multiple = TRUE),
+                        
                             
                             actionButton(inputId = "build",
                                          label = "Build Network")
@@ -56,10 +49,8 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                           ),
                           mainPanel(
                             plotOutput("outliers"),
-                            br(),
-                            h2("WGCNA's pickSoftThreshold fitIndices table :"),
+                            htmlOutput("sft_table_title"),
                             tableOutput(outputId = "sft_table")
-                            
                           )
                         )
 )
@@ -67,6 +58,16 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
 tab_enr <- tabItem("enr",
                    sidebarLayout(
                      sidebarPanel(
+                       selectizeInput(inputId = "sources",
+                                           label = "Select sources for enrichment",
+                                           choices = enr_sources,
+                                           selected = c("GO", "KEGG", "REAC"),
+                                           multiple = TRUE),
+                       
+                       actionButton(inputId = "enrich",
+                                         label = "Enrich Modules"),
+                       br(),br(),
+                       
                        selectizeInput(inputId = "select_mod",
                                       label = "Select Module :",
                                       selected = NULL,

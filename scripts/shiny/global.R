@@ -20,6 +20,7 @@ library(gprofiler2)
 library(plotly)
 library(cluster)
 library(shinyvalidate)
+library(shinydashboard)
 library(dashboardthemes)
 
 # Functions ----------------------------------------------------------------------
