@@ -78,6 +78,14 @@ get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
   return(clusters)
 }
 
+fonction_load <- function() {
+  cat("helloooo")
+  load("txidata.RData")
+  cat("   done")
+  cat(exists("gse"))
+}
+
 # Preliminary code ---------------------------------------------------------------
-load("txidata.RData")
+# update max uppload size to 50mB
+options(shiny.maxRequestSize = 50*1024^2)
 enr_sources <- c("GO", "KEGG", "REAC", "TF", "MIRNA", "CORUM", "HP", "HPA", "WP")

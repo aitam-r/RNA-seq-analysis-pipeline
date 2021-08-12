@@ -12,9 +12,9 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                             
                             selectizeInput(inputId = "rm_sample",
                                            label = "Choose samples to exclude : ",
-                                           choices = coldata$names,
+                                           choices = NULL,
                                            multiple = T,
-                                           options = list(maxItems = length(coldata$names) - 3)),
+                                           options = NULL), #list(maxItems = length(coldata$names) - 3)),
                             
                             # Selects the top value % of variable genes. 
                             # Max is dependent on a max number of genes (8000)

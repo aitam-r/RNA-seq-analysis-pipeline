@@ -40,7 +40,7 @@
 
 
 
-** TODO shiny [18/24]
+** TODO shiny [22/27]
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
 - [X] logFoldChange and p-value cutoffs (on sliders?)
@@ -66,13 +66,16 @@
   - [ ] See that the figures scale better
   - [ ] Sample to sample distance does not plot?
 - [ ] Look at annotating with tximport, and using GENCODE instead of ENSEMBL
-- [ ] Barplot for gene counts with error bar(optional)?
+- [X] Barplot for gene counts with error bar(optional)?
 - [X] Use shinydashboard to make things look pretty
 - [X] Make ~my_values$res~ from an ~eventReactive~
-- [ ] Add a shinyvalidate on the base/compare conditions, they need to be different
+- [X] Add a shinyvalidate on the base/compare conditions, they need to be different
 - [X] Check the c(input, input, value) are okay relative to logic.
 - [ ] Make the max number of genes non-hardcoded
-- [ ] Add possibility to start with counts table directly, instead of Salmon quants 
+- [X] Add possibility to start with counts table directly, instead of Salmon quants
+- [X] Change the choice of levels so that it reflects the variable chosen
+- [ ] Change reactiveValues to correct usage
+- [ ] Find a way to make the conditions not change after the relevel
 
 **  TODO Other scripts [1/2]
 - [ ] Add an automatic download of the index with =refgenie= with the snakefile
@@ -87,5 +90,3 @@
 - [ ] écrire des scripts pour lancer :
   - [ ] Snakemake
   - [ ] shiny
- 
- 

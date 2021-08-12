@@ -1,8 +1,19 @@
 # Calculs ------
 
-my_values$counts_norm <- reactive({
+observe({
+  req(input$upload_samp_tab)
   #using bias corrected counts (without an offset)
-  raw_counts <- assay(gse_scaled, "counts") %>% round()
+  if(input$snakemake) {
+    # TEMPORARY!!!!!!!!!!!
+    # I don't know how to tell it to wait for loading by fonction_load()
+    req(dds()) 
+    raw_counts <- assay(gse_scaled, "counts") %>% round()
+  } else {
+    req(my_values$counts)
+    cat("hello")
+    cat("\n")
+    raw_counts <- isolate(my_values$counts) %>% round()
+  }
   # Remove non-expressed genes
   raw_counts <- raw_counts[rowSums(raw_counts) > 0,]
   
@@ -11,13 +22,20 @@ my_values$counts_norm <- reactive({
                               2, 
                               function(x){quantile(x[x>0], 0.75)})
   # Divide each column by its upper quartile value
-  t(raw_counts)/quantile_expressed
+  my_values$counts_norm <- t(raw_counts)/quantile_expressed
 })
 
 observeEvent(input$rm_sample, {
-  my_values$counts_norm() <- 
-    my_values$counts_norm()[!(rownames(my_values$counts_norm()) %in%
+  my_values$counts_norm <- 
+    my_values$counts_norm[!(rownames(my_values$counts_norm) %in%
                               input$rm_sample),]
+})
+
+observe({
+  req(coldata())
+  updateSelectizeInput(inputId = "rm_sample",
+                       choices = coldata()[, "names"],
+                       options = list(maxItems = nrow(coldata()) - 3))
 })
 
 
@@ -49,32 +67,32 @@ modules_enriched <- eventReactive({
     })
   })
 
-observeEvent(my_values$counts_norm(), {
+observeEvent(my_values$counts_norm, {
   # Update the maximum of gene one can keep
   # default value of 8 000 genes not to crush computer resources
-  m <- round(8000/ncol(req(my_values$counts_norm())), 1)
+  m <- round(8000/ncol(req(my_values$counts_norm)), 1)
   updateSliderInput(session,
                     "percent_g",
                     max = m)
 })
 
-my_values$counts_filt <- eventReactive(my_values$counts_norm(), {
-  filter_low_var(my_values$counts_norm(),
+my_values$counts_filt <- eventReactive(my_values$counts_norm, {
+  filter_low_var(my_values$counts_norm,
                  pct = input$percent_g,
                  type = "median")
 })
 
 output$outliers <- renderPlot({
   req(input$explore_w)
-  sampleTree <- hclust(dist(my_values$counts_norm()), method = "average")
+  sampleTree <- hclust(dist(my_values$counts_norm), method = "average")
   plot(sampleTree, main = "Sample clustering to detect outliers",
        sub="", xlab="", cex.lab = 1.5,
        cex.axis = 1.5, cex.main = 2)
 })
 
 output$warning <- renderText({
-  req(my_values$counts_norm())
-  if(nrow(my_values$counts_norm()) < 20) {
+  req(my_values$counts_norm)
+  if(nrow(my_values$counts_norm) < 20) {
     paste("\n", "Warning : The number of samples is too low for WGCNA analyis.", "\n")
   }
 })

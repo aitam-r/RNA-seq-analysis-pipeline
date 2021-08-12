@@ -2,18 +2,31 @@ tab_deseq2_su <- tabItem("deseq2_su",
                          #Choose the experimental design
                          selectInput(inputId = "variables",
                                      label = "Choose the variables of the experimental design :",
-                                     choices = colnames(coldata %>% select(-names, -files)),
-                                     multiple = T),
+                                     choices = NULL,
+                                     multiple = TRUE),
+                        
+                         # Choose the variable across which differential expression is calculated 
+                         selectInput(inputId = "deseq_var",
+                                     label = "Choose the variable for differential Expression",
+                                     choices = NULL),
+                                     
                          
                          # Choose base level for condition
                          selectInput(inputId = "base_cond",
                                      label = "Choose the base condition :",
-                                     choices = levels(gse$condition)),
+                                     choices = NULL),
                          
                          # Choose base level for condition
                          selectInput(inputId = "compare_cond",
                                      label = "Choose the condition to compare with:",
-                                     choices = levels(gse$condition)),
+                                     choices = NULL,
+                                     selected = NULL),
+                         
+                         # rld or vst?
+                         selectInput(inputId = "r_v",
+                                     label = "Choose the variance stabilizing transformation wanted for the PCA (vst is much faster) :",
+                                     choices = c("rld", "vst"),
+                                     selected = "vst"),
                          
                          actionButton(inputId = "execute_d",
                                       label = "Run DESeq2")
@@ -78,7 +91,7 @@ tab_sgc <- tabItem("sgc",
                        
                        checkboxGroupInput("condition_plot",
                                           label = "Choose which condition to plot :",
-                                          choices = levels(gse$condition),
+                                          choices = NULL,
                                           selected = NULL),
                        
                        checkboxInput("barplot",
