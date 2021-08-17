@@ -11,3 +11,5 @@ data/quants*
 *.RData
 /scripts/shiny/.Rhistory
 /scripts/shiny/genes.csv
+.emacs.d
+/scripts/shiny/.my_emacs.d/

@@ -24,7 +24,7 @@
 - [X] Install relevant packages
 
  
-** TODO R WGCNA scripts [8/11]
+** TODO R WGCNA scripts [9/11]
 - [X] Clean up Soham's code
 - [X] Run GWENA on some samples? Or do only WGCNA?
 - [X] Figure out what at which point to get normalized counts (and nothing else) from my pipeline :
@@ -34,13 +34,13 @@
 - [X] A subset of genes is selected (else it is too resource-intensive), the highest-variance ones. However, we've seen that there is a mean-variance relationship in count data. So our selection is biased towards highly expressed genes (is that bad?), unless we use a variance stabilizing transformation.
 - [X] Pre-screen data to eliminate outlier samples!
 - [X] Put a warning on sample count
+- [X] Display number of modules?
 - [ ] Look at differential co-expression analysis
-- [ ] Try to parallelize? Or make a note for someone to do it afterwards. Or try iit once you have 16GB of RAM.
-- [ ] Display number of modules?
+- [ ] Try to parallelize? Or make a note for someone to do it afterwards. Or try it once you have 16GB of RAM.
 
 
 
-** TODO shiny [22/27]
+** TODO shiny [26/29]
 - [X] Choose the experimental design (add variables for instance)
 - [X] Choose what condition is control
 - [X] logFoldChange and p-value cutoffs (on sliders?)
@@ -57,25 +57,33 @@
 - [X] Show only potential variables (not names and files)
 - [X] Allow choosing of type of network
 - [X] Check that pickstfthreshold only updates after a button prompt, but not the change of percent_
-- [X] Running WGCNA without exploring samples bricks the app
-- [ ] Plotting :
-  - [ ] Draw a MAplot, add possibility to choose shrunken fold changes
-  - [ ] Choose what to highlight in the PCA =intgroups=, maybe is only interesting if multiple variables
-  - [ ] Allow brush to select some genes on the Maplot? Useful?
-  - [ ] Add a  =fileInput= to enter the coldata information?
-  - [ ] See that the figures scale better
-  - [ ] Sample to sample distance does not plot?
-- [ ] Look at annotating with tximport, and using GENCODE instead of ENSEMBL
-- [X] Barplot for gene counts with error bar(optional)?
 - [X] Use shinydashboard to make things look pretty
+- [X] Barplot for gene counts with error bar(optional)?
+- [X] Running WGCNA without exploring samples bricks the app
 - [X] Make ~my_values$res~ from an ~eventReactive~
 - [X] Add a shinyvalidate on the base/compare conditions, they need to be different
 - [X] Check the c(input, input, value) are okay relative to logic.
-- [ ] Make the max number of genes non-hardcoded
 - [X] Add possibility to start with counts table directly, instead of Salmon quants
 - [X] Change the choice of levels so that it reflects the variable chosen
-- [ ] Change reactiveValues to correct usage
-- [ ] Find a way to make the conditions not change after the relevel
+- [X] Add a  =fileInput= to enter the coldata information?
+- [-] Plotting :
+  - [X] Choose what to highlight in the PCA =intgroups=, maybe is only interesting if multiple variables
+  - [X] Sample to sample distance does not plot?
+  - [ ] Draw a MAplot, add possibility to choose shrunken fold changes
+  - [ ] Allow brush to select some genes on the Maplot? Useful?
+  - [X] See that the figures scale better
+  - [X] Change the font size of the barplots
+  - [X] Add a slider for the barplot transparency
+  - [ ] Add a way to calculate centroids on the PCA?
+  - [X] Add a TOMplot for WGCNA : *Too complicated, it would involve digging into GWENA code to correct for the module postmerge.*
+  - [X] Add a module merged plot for WGCNA
+  - [X] See that the distance heatmap has labels and everything
+- [X] Look at annotating with tximport, and using GENCODE instead of ENSEMBL
+- [ ] Make the max number of genes non-hardcoded
+- [X] Change reactiveValues to correct usage
+- [X] Find a way to make the conditions not change after the relevel
+- [ ] check how tximeta works on another computer. Does it break shiny if it doesn't use the database?
+  if so, I should look at doing it with tximport
 
 **  TODO Other scripts [1/2]
 - [ ] Add an automatic download of the index with =refgenie= with the snakefile

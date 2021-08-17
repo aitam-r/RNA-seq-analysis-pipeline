@@ -1,7 +1,9 @@
 server <- function(input, output, session) {
   
   # Object to store reactives that can change
-  my_values <- reactiveValues(variable_chosen = NULL,
+  my_values <- reactiveValues(coldata = NULL,
+                              se = NULL,
+                              variable_chosen = NULL,
                               counts = NULL,
                               res = NULL,
                               counts_norm = NULL,

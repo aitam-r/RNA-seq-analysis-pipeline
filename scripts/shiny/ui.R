@@ -17,6 +17,7 @@ ui <- dashboardPage(
                menuSubItem("Single gene counts", tabName = "sgc")),
       menuItem("Co-expression Network", tabName = "wgcna",
                menuSubItem("WGCNA Set-up", tabName = "wgcna_su"),
+               menuSubItem("Modules", tabName = "mod"),
                menuSubItem("Enrichment", tabName = "enr"))
     )
   ),
@@ -30,6 +31,7 @@ ui <- dashboardPage(
       tab_deg,
       tab_sgc,
       tab_wgcna_su,
+      tab_mod,
       tab_enr
     )
   )

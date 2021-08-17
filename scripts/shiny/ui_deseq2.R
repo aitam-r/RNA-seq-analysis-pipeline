@@ -25,7 +25,7 @@ tab_deseq2_su <- tabItem("deseq2_su",
                          # rld or vst?
                          selectInput(inputId = "r_v",
                                      label = "Choose the variance stabilizing transformation wanted for the PCA (vst is much faster) :",
-                                     choices = c("rld", "vst"),
+                                     choices = c("rlog", "vst"),
                                      selected = "vst"),
                          
                          actionButton(inputId = "execute_d",
@@ -34,7 +34,7 @@ tab_deseq2_su <- tabItem("deseq2_su",
                         
 
 tab_plots <- tabItem("plots",
-                     tabBox(
+                     tabBox(width = NULL,
                        tabPanel("Sample-to-sample distances", 
                                 plotOutput(outputId = "dist")),
                        
@@ -44,9 +44,9 @@ tab_plots <- tabItem("plots",
                        tabPanel("MAplot", 
                                 plotOutput(outputId = "ma")),
                        
-                       tabPanel("Volcano Plot", plotOutput(outputId = "volcano")),
-                       
-                       width = NULL)
+                       tabPanel("Volcano Plot", 
+                                plotOutput(outputId = "volcano"))
+                       )
 )
                         
 
@@ -96,7 +96,12 @@ tab_sgc <- tabItem("sgc",
                        
                        checkboxInput("barplot",
                                      label = "Barplot with error bars",
-                                     value = FALSE)
+                                     value = FALSE),
+                       sliderInput("alpha",
+                                   label = "Choose the barplot transparency",
+                                   min = 0,
+                                   max = 1,
+                                   value = .2)
                      ),
                      mainPanel(
                        plotOutput(outputId = "plot_gene")

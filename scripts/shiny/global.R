@@ -3,22 +3,21 @@ library(shiny)
 library(BiocManager)
 library(DESeq2)
 library(RColorBrewer)
-library(calibrate)
-library(gplots)
-library(genefilter)
-#library(vsn) for microarray data, not sure if useful/necessary
+# library(calibrate)
+# library(gplots)
+# library(genefilter)
 library(pheatmap)
 library(tximeta)
+library(tximport)
 library(magrittr)
 library(stringr)
 library("AnnotationDbi")
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library("org.Hs.eg.db")
-library(ggvenn)
 library(shinythemes)
 library(GWENA)
 library(gprofiler2)
 library(plotly)
-library(cluster)
 library(shinyvalidate)
 library(shinydashboard)
 library(dashboardthemes)
@@ -78,14 +77,10 @@ get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
   return(clusters)
 }
 
-fonction_load <- function() {
-  cat("helloooo")
-  load("txidata.RData")
-  cat("   done")
-  cat(exists("gse"))
-}
 
 # Preliminary code ---------------------------------------------------------------
-# update max uppload size to 50mB
+# update max upload size to 50mB
 options(shiny.maxRequestSize = 50*1024^2)
 enr_sources <- c("GO", "KEGG", "REAC", "TF", "MIRNA", "CORUM", "HP", "HPA", "WP")
+testing <-FALSE 
+txi_met_chosen <- TRUE

@@ -2,16 +2,21 @@
 
 observe({
   req(input$upload_samp_tab)
-  #using bias corrected counts (without an offset)
+  req(my_values$se) 
   if(input$snakemake) {
-    # TEMPORARY!!!!!!!!!!!
-    # I don't know how to tell it to wait for loading by fonction_load()
-    req(dds()) 
-    raw_counts <- assay(gse_scaled, "counts") %>% round()
+    if(!txi_met_chosen){
+      txi_scaled <- tximport(req(my_values$coldata$files),
+                             type = "salmon",
+                             tx2gene = tx2gene(),
+                             countsFromAbundance = "lengthScaledTPM")
+      raw_counts <- txi_scaled$counts %>% round()
+    } else {
+      gse_scaled <- summarizeToGene(my_values$se, countsFromAbundance = "lengthScaledTPM")
+      raw_counts <- assay(gse_scaled, "counts") %>% round()
+    }
   } else {
+    # one should use bias corrected counts, not salmon counts directly
     req(my_values$counts)
-    cat("hello")
-    cat("\n")
     raw_counts <- isolate(my_values$counts) %>% round()
   }
   # Remove non-expressed genes
@@ -25,6 +30,21 @@ observe({
   my_values$counts_norm <- t(raw_counts)/quantile_expressed
 })
 
+output$warning <- renderText({
+  req(my_values$counts_norm)
+  if(nrow(my_values$counts_norm) < 20) {
+    paste("\n", "Warning : The number of samples is too low for WGCNA analyis.", "\n")
+  }
+})
+
+output$outliers <- renderPlot({
+  req(input$explore_w)
+  sampleTree <- hclust(dist(my_values$counts_norm), method = "average")
+  plot(sampleTree, main = "Sample clustering to detect outliers",
+       sub="", xlab="", cex.lab = 1.5,
+       cex.axis = 1.5, cex.main = 2)
+})
+
 observeEvent(input$rm_sample, {
   my_values$counts_norm <- 
     my_values$counts_norm[!(rownames(my_values$counts_norm) %in%
@@ -32,16 +52,16 @@ observeEvent(input$rm_sample, {
 })
 
 observe({
-  req(coldata())
+  req(my_values$coldata)
   updateSelectizeInput(inputId = "rm_sample",
-                       choices = coldata()[, "names"],
-                       options = list(maxItems = nrow(coldata()) - 3))
+                       choices = my_values$coldata[, "names"],
+                       options = list(maxItems = nrow(my_values$coldata) - 3))
 })
 
 
 net <- eventReactive(input$build, {
   withProgress(message = "Building network", {
-    build_net(my_values$counts_filt(),
+    build_net(my_values$counts_filt,
               cor_func = "spearman",
               power_value = input$sft_thres,
               network_type = isolate(input$type_net),
@@ -50,7 +70,7 @@ net <- eventReactive(input$build, {
 })
 modules <- eventReactive(net(), {
   withProgress(message = "Detecting Modules", {
-    detect_modules(my_values$counts_filt(),
+    detect_modules(my_values$counts_filt,
                    net()$network,
                    detailled_result = T)
   })
@@ -76,31 +96,28 @@ observeEvent(my_values$counts_norm, {
                     max = m)
 })
 
-my_values$counts_filt <- eventReactive(my_values$counts_norm, {
-  filter_low_var(my_values$counts_norm,
+observe({
+  req(my_values$counts_norm)
+  req(input$percent_g)
+  my_values$counts_filt <- filter_low_var(my_values$counts_norm,
                  pct = input$percent_g,
                  type = "median")
 })
 
-output$outliers <- renderPlot({
-  req(input$explore_w)
-  sampleTree <- hclust(dist(my_values$counts_norm), method = "average")
-  plot(sampleTree, main = "Sample clustering to detect outliers",
-       sub="", xlab="", cex.lab = 1.5,
-       cex.axis = 1.5, cex.main = 2)
-})
+# tom_diss <- eventReactive(net(), {
+#   WGCNA::TOMdist(net()$network)
+# })
+# 
+# 
+# output$tomplot <- renderPlot({
+#   WGCNA::TOMplot(tom_diss(), fastcluster::hclust(as.dist(tom_diss()), method = "average"))
+# })
 
-output$warning <- renderText({
-  req(my_values$counts_norm)
-  if(nrow(my_values$counts_norm) < 20) {
-    paste("\n", "Warning : The number of samples is too low for WGCNA analyis.", "\n")
-  }
-})
 
 sft <- eventReactive({input$update_sft}, {
   withProgress(message = "Calculating", {
     pwr_vec <- c(1:9, seq(10, 30, by = 2))
-    WGCNA::pickSoftThreshold(req(my_values$counts_filt()),
+    WGCNA::pickSoftThreshold(req(my_values$counts_filt),
                              powerVector = pwr_vec,
                              corFnc = WGCNA::cor,
                              corOptions = list(method = "spearman"),
@@ -137,6 +154,21 @@ output$sft_table <- renderTable({
   striped = TRUE,
   bordered = TRUE)
 
+output$merge <- renderPlot({
+ plot_modules_merge(
+    modules_premerge = modules()$modules_premerge, 
+    modules_merged = modules()$modules,
+    zoom = 1)
+  
+}, res = 96, height = 600)
+
+output$sizes <- renderPlot({
+  
+ggplot(data.frame(modules()$modules %>% stack), 
+                ggplot2::aes(x = ind)) + ggplot2::stat_count() +
+  ylab("Number of genes") +
+  xlab("Module")
+}, res = 96)
 
 observe({
   updateSelectizeInput(session,

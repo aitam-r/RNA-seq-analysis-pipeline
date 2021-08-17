@@ -41,6 +41,7 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                                          max = 30,
                                          value = 6),
                             
+                            renderText("threshold"),
                         
                             
                             actionButton(inputId = "build",
@@ -53,6 +54,22 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                             tableOutput(outputId = "sft_table")
                           )
                         )
+)
+
+tab_mod <- tabItem("mod",
+                   tabBox(
+                     tabPanel("Modules mergers",
+                              plotOutput("merge")
+                     ),
+                     tabPanel("Module sizes",
+                              plotOutput("sizes")
+                              
+                     # Abandonned : the modules wouldn't correspond to GWENA's input.
+                     # ),
+                     # tabPanel("TOMplot",
+                     #          plotOutput("tomplot")
+                     )
+                   )
 )
 
 tab_enr <- tabItem("enr",

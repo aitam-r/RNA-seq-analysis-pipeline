@@ -11,11 +11,15 @@ tab_gsu <- tabItem("gsu",
                        fileInput("upload_samp_tab", NULL, accept = c(".csv", ".tsv"))
                      ),
                      column(width = 6,
-                            conditionalPanel(condition = "input.snakemake == false", # or FALSE?
+                            conditionalPanel(condition = "input.snakemake == false",
                                              br(),
                                              p("Please provide the count tables, column names being the sample names. They should imperatively match the names in the sample data table. They should also be as close as possible to raw counts."),
                                              br(),
                                              fileInput("upload_counts", NULL, accept = c(".csv", ".tsv"))
+                            ),
+                            conditionalPanel(condition = "input.snakemake == true",
+                                             actionButton("import",
+                                                          label = "Import Salmon count data")
                             )
                      )
                    )

@@ -10,40 +10,40 @@ observe(iv$add_rule("compare_cond",
 
 
 observe({
-  req(coldata())
+  req(my_values$coldata)
   updateSelectInput(session = session,
                     inputId = "variables",
-                    choices = colnames(coldata()))
+                    choices = colnames(my_values$coldata))
 })
 
 observe({
-  req(coldata())
+  req(my_values$coldata)
   updateSelectInput(session = session,
                     inputId = "deseq_var",
-                    choices = colnames(coldata()))
+                    choices = colnames(my_values$coldata))
 })
 
 
 observe({
-  req(coldata())
+  req(my_values$coldata)
   req(input$deseq_var)
-  my_values$variable_chosen <- coldata() %>% pull(input$deseq_var) %>% as.factor()
+  my_values$variable_chosen <- my_values$coldata %>% dplyr::pull(input$deseq_var) %>% as.factor()
 })
 
 observe({
-  req(coldata())
+  req(my_values$coldata)
   req(input$deseq_var)
   updateSelectInput(session = session,
                     inputId = "base_cond",
-                    choices = unique(coldata()[,input$deseq_var]))
+                    choices = unique(my_values$coldata[,input$deseq_var]))
 })
 
 observe({
-  req(coldata())
+  req(my_values$coldata)
   req(input$deseq_var)
   updateSelectInput(session = session,
                     inputId = "compare_cond",
-                    choices = unique(coldata()[,input$deseq_var]))
+                    choices = unique(my_values$coldata[,input$deseq_var]))
 })
 
 #The table of genes, displayed on DEG panel
@@ -54,40 +54,52 @@ gene_table <- reactive({
            log2FoldChange > input$lfc_cutoff |
              log2FoldChange < -input$lfc_cutoff) %>%
     #Significant digits
-    mutate(across(where(is.numeric), signif, 3))
+    mutate(dplyr::across(where(is.numeric), signif, 3))
 })
 
 #The button to run DESeqDataSet, DESeq, results
 dds <- eventReactive(input$execute_d, {
-  
   # relevel based on the user selection
   my_values$variable_chosen %<>% relevel(input$base_cond)
-  
+  # my_values$coldata[, input$deseq_var] %<>% relevel(input$base_cond) #usefulness?
   withProgress(message = "Running DESeq2", {
     if(input$snakemake) {
       withProgress(message = "Loading data...", {
-        #fonction_load()
-        load("~/Documents/TAAAAF/Stage/liver/scripts/shiny/txidata.RData")
+        if(!txi_met_chosen) {
+          tmp <- DESeqDataSetFromTximport(txi,
+                                          my_values$coldata,
+                                          paste("~ ",
+                                                paste(req(input$variables),
+                                                      collapse = " + ")) %>%
+                                            as.formula())
+        } else {
+          tmp <- DESeqDataSet(gse(), 
+                              design = paste("~ ",
+                                             paste(req(input$variables),
+                                                   collapse = " + ")) %>% 
+                                as.formula())
+        }
       })
-      tmp <- DESeqDataSet(gse, 
-                          design = paste("~ ",
-                                         paste(req(input$variables),
-                                               collapse = " + ")) %>% 
-                            as.formula())
     }
     else {
-     
-      
+      if(testing) {
+        load(file = "./dds.RData")
+        return(tmp2)
+      }
+      else {
       tmp <- DESeqDataSetFromMatrix(req(my_values$counts),
-                                    coldata(),
+                                    my_values$coldata,
                                     design = paste("~ ",
                                                    paste(req(input$variables),
                                                          collapse = " + ")) %>% 
                                       as.formula())
+      }
     }
     #filtering
-    keep <- rowSums(counts(tmp)) > 1 
-    DESeq(tmp[keep,])
+    keep <- rowSums(counts(tmp)) > 1
+    tmp2 <- DESeq(tmp[keep,])
+    # save(tmp2, file = "./dds.RData")
+    return(tmp2)
   })
 })
 
@@ -131,25 +143,30 @@ output$dist <- renderPlot({
     t() %>%
     dist()
   sampleDistMatrix <- as.matrix(sampleDists)
-  rownames(sampleDistMatrix) <- rld_vst()$condition
-  colnames(sampleDistMatrix) <- NULL
+  rownames(sampleDistMatrix) <- my_values$coldata[, "names"]
+  colnames(sampleDistMatrix) <- my_values$coldata[, "names"]
   
   colors <- colorRampPalette(rev(brewer.pal(9, "Purples")) )(255)
   pheatmap(sampleDistMatrix,
+           show_rownames = FALSE,
+           show_colnames = TRUE,
+           annotation_col = my_values$coldata %>%
+             select("names", input$variables) %>%
+             tibble::column_to_rownames("names"),
            clustering_distance_rows=sampleDists,
            clustering_distance_cols=sampleDists,
            col=colors)
-})
+}, res = 96, height = 600)
 
 output$pca <- renderPlot({
   req(rld_vst())
-  plotPCA(rld_vst(), intgroup = input$variables)
-})
+  plotPCA(rld_vst(), intgroup = input$variables, ntop = 1000)
+}, res = 96, height = 600)
 
 output$ma <- renderPlot({
   req(my_values$res)
   plotMA(my_values$res, alpha = 0.05)
-})
+}, res = 96)
 
 
 output$volcano <- renderPlot({
@@ -159,7 +176,7 @@ output$volcano <- renderPlot({
               sigthresh=0.05,
               textcx=.8,
               xlim=c(-2.3, 2))
-})
+}, res = 96, height = 600)
 
 # outputs the number of genes without names
 output$genes_na <- renderUI({
@@ -226,30 +243,35 @@ output$plot_gene <- renderPlot({
   req(input$sel_gene)
   req(my_values$res)
   
-  # find the minimum of replicates by condition (for barplot transparency)
-  min_replicates <- count(my_values$variable_chosen %>% as.data.frame(), 
-                          my_values$variable_chosen)[,"n"] %>%
-    min()
   
   d <- plotCounts(dds(),
                   gene=which(my_values$res$symbol == input$sel_gene),
                   intgroup = input$deseq_var,
                   returnData=TRUE)
   
-  levels_variable <- levels(my_values$variable_chosen)
   
   if(input$barplot) {
   ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-              aes(x = my_values$variable_chosen, y = count)) + 
+              aes_string(x = input$deseq_var, y = "count", fill = input$deseq_var)) + 
     geom_point(position = position_jitter(w=0.1,h=0)) + 
     scale_y_log10() +
     # Many assumptions here, but at least not normality (mean_cl_boot)
-    stat_summary(fun = mean, geom = "bar", alpha = 0.05*min_replicates) +
-       stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05)
+    stat_summary(fun = mean, geom = "bar", alpha = input$alpha) +
+       stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05) +
+      ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
+      xlab("Modality") +
+      theme(axis.title.x = element_text(size = 15),
+            axis.title.y = element_text(size = 15),
+            plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
   } else {
     ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-              aes(x = my_values$variable_chosen, y = count)) + 
+              aes_string(x = input$deseq_var, y = "count")) + 
     geom_point(position = position_jitter(w=0.1,h=0)) + 
-    scale_y_log10()
+    scale_y_log10()+
+      ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
+      xlab("Modality") +
+      theme(axis.title.x = element_text(size = 15),
+            axis.title.y = element_text(size = 15),
+            plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
   }
-})
+}, res = 96)
