@@ -14,3 +14,12 @@ data/quants*
 .emacs.d
 /scripts/shiny/.my_emacs.d/
 todo.*\\.org
+/scripts/deseq_repro.R
+/scripts/deseq_script.R
+/scripts/ex_salmon.py
+/scripts/todo_scripts.org
+/scripts/wcgna_script.R
+/SRR_Acc_List.txt
+/SraRunTable.txt
+/coldata.csv
+/dag.svg

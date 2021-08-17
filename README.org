@@ -13,3 +13,19 @@ The steps of the pipeline are as follow :
 ** Workflow tools
 - steps 2-3-4 are performed via =Snakemake=
 - steps 5-6 through a =shiny= interface
+  
+* Running instructions
+
+** From raw data (reads)
+1. Clone this repository
+2. Install [[https://github.com/conda-forge/miniforge#mambaforge][Mambaforge]]
+3. Run ~mamba env create --name name_of_env --file salmon_env.yaml~ in a terminal
+4. Run ~conda activate name_of_env~
+5. Edit the config file (for instance for single-end or pair-end data)
+6. Run ~snakemake~
+7. Quality control check in =./analysis=
+8. Run ~R -e "shiny::runApp('/scripts/shiny')"~ for the rest of the analysis
+
+
+** From a raw counts table
+1. Run ~R -e "shiny::runApp('/scripts/shiny')"~
