@@ -24,8 +24,10 @@ The steps of the pipeline are as follow :
 5. Edit the config file (for instance for single-end or pair-end data)
 6. Run ~snakemake~
 7. Quality control check in =./analysis=
-8. Run ~R -e "shiny::runApp('/scripts/shiny')"~ for the rest of the analysis
+8. Download the R packages needed (see sessionInfo.txt) (or open =scripts/global.R= in RStudio and download missing packages)
+9. Run ~R -e "shiny::runApp('/scripts/shiny')"~ for the rest of the analysis
 
 
 ** From a raw counts table
-1. Run ~R -e "shiny::runApp('/scripts/shiny')"~
+1. Download the R packages needed (see sessionInfo.txt) (or open =scripts/global.R= in RStudio and download missing packages)
+2. Run ~R -e "shiny::runApp('/scripts/shiny')"~ 

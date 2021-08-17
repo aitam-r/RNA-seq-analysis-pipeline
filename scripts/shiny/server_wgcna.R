@@ -2,8 +2,8 @@
 
 observe({
   req(input$upload_samp_tab)
-  req(my_values$se) 
   if(input$snakemake) {
+  req(my_values$se) 
     if(!txi_met_chosen){
       txi_scaled <- tximport(req(my_values$coldata$files),
                              type = "salmon",

@@ -41,7 +41,8 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                                          max = 30,
                                          value = 6),
                             
-                            renderText("threshold"),
+                            textOutput("threshold"),
+                            br(),br(),
                         
                             
                             actionButton(inputId = "build",
