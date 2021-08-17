@@ -248,30 +248,38 @@ output$plot_gene <- renderPlot({
                   gene=which(my_values$res$symbol == input$sel_gene),
                   intgroup = input$deseq_var,
                   returnData=TRUE)
-  
-  
-  if(input$barplot) {
+  if(input$plot == "base") {
   ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-              aes_string(x = input$deseq_var, y = "count", fill = input$deseq_var)) + 
+         aes_string(x = input$deseq_var, y = "count")) + 
     geom_point(position = position_jitter(w=0.1,h=0)) + 
     scale_y_log10() +
-    # Many assumptions here, but at least not normality (mean_cl_boot)
-    stat_summary(fun = mean, geom = "bar", alpha = input$alpha) +
-       stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05) +
-      ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
-      xlab("Modality") +
-      theme(axis.title.x = element_text(size = 15),
-            axis.title.y = element_text(size = 15),
-            plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
-  } else {
+    ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
+    xlab("Modality") +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_text(size = 15),
+          plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
+  } else if(input$plot == "barplot") {
     ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-              aes_string(x = input$deseq_var, y = "count")) + 
-    geom_point(position = position_jitter(w=0.1,h=0)) + 
-    scale_y_log10()+
-      ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
+           aes_string(x = input$deseq_var, y = "count", fill = input$deseq_var)) +
+      geom_point(position = position_jitter(w=0.1,h=0)) +
+      scale_y_log10() +
+      ggtitle(paste("Plot of ", input$sel_gene, " counts")) +
       xlab("Modality") +
       theme(axis.title.x = element_text(size = 15),
             axis.title.y = element_text(size = 15),
-            plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
+            plot.title = element_text(face = "bold", size = 20, hjust = 0.5)) +
+      # Many assumptions here, but at least not normality (mean_cl_boot)
+      stat_summary(fun = mean, geom = "bar", alpha = input$alpha) +
+      stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05)
+  } else if(input$plot == "boxplot" ) {
+    ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
+           aes_string(x = input$deseq_var, y = "count", fill = input$deseq_var)) +
+      ggtitle(paste("Plot of ", input$sel_gene, " counts")) +
+      xlab("Modality") +
+      theme(axis.title.x = element_text(size = 15),
+            axis.title.y = element_text(size = 15),
+            plot.title = element_text(face = "bold", size = 20, hjust = 0.5)) +
+      geom_boxplot()
+      
   }
 }, res = 96)

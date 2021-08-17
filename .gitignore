@@ -13,3 +13,4 @@ data/quants*
 /scripts/shiny/genes.csv
 .emacs.d
 /scripts/shiny/.my_emacs.d/
+todo.*\\.org

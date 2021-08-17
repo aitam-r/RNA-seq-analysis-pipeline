@@ -38,7 +38,7 @@ observeEvent(input$import, {
                                        "quant.sf")
   validate(need(file.exists(my_values$coldata$files),
                message = "Some files specified by sample data names do not exist"))
-  if(!txi_met_chosen) {
+  if(!txi_met_chosen) { # Does not work
     withProgress(message = "Importing Salmon counts, GENCODE", {
       txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
       keys <- keys(txdb, keytype = "TXNAME")
