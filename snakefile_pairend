@@ -10,7 +10,7 @@ rule all:
 
 rule multiqc:
     input:
-        expand("analysis/{{dirs}}/{dataset}_fastqc.zip", dataset=DATASETS)
+        expand("analysis/{{dirs}}/{dataset}_{idx}_fastqc.zip", dataset=DATASETS, idx=["1","2"])
     output:
         "analysis/{dirs}/multiqc_report.html"
     params:
@@ -31,9 +31,11 @@ rule fastqc:
 
 rule cutadapt:
     input:
-        "data/seqs/{sample}.fastq.gz",
+        r1="data/seqs/{sample}_1.fastq.gz",
+        r2="data/seqs/{sample}_2.fastq.gz"
     output:
-        "data/trim/{sample}.fastq.gz",
+        o1="data/trim/{sample}_1.fastq.gz",
+        o2="data/trim/{sample}_2.fastq.gz"
     threads: 1
     params:
         a1="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA",
@@ -41,13 +43,14 @@ rule cutadapt:
         ml="20" #minimum length
     shell:
         "cutadapt -a {params.a1} -A {params.a2} -m {params.ml} -o "
-        "{output} --length-tag 'length=' "
-        "--cores={threads} {input}" 
+        "{output.o1} -p {output.o2} --length-tag 'length=' "
+        "--cores={threads} {input.r1} {input.r2}" 
 
 
 rule salmon_quant:
     input:
-        "data/trim/{sample}.fastq.gz",
+        r1 = "data/trim/{sample}_1.fastq.gz",
+        r2 = "data/trim/{sample}_2.fastq.gz",
         index = "data/index/salmon_partial_sa_index__default/default"
     output:
         "data/quants/{sample}/quant.sf"
@@ -57,4 +60,4 @@ rule salmon_quant:
     shell:
         "salmon quant -i {input.index} -l A -p {threads} --validateMappings "
         "--gcBias --numGibbsSamples 20 -o {params.dir} "
-        "-r {input}"
+        "-1 {input.r1} -2 {input.r2}"
