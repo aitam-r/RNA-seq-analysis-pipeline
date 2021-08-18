@@ -243,43 +243,52 @@ output$plot_gene <- renderPlot({
   req(input$sel_gene)
   req(my_values$res)
   
-  
+  return(req(plot_counts()))
+}, res = 96)
+
+plot_counts <- reactive({
+  req(input$sel_gene)
+  req(my_values$res)
+   
   d <- plotCounts(dds(),
                   gene=which(my_values$res$symbol == input$sel_gene),
                   intgroup = input$deseq_var,
                   returnData=TRUE)
-  if(input$plot == "base") {
-  ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-         aes_string(x = input$deseq_var, y = "count")) + 
+  
+  plot_fin <- ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
+                     aes_string(x = input$deseq_var, y = "count")) + 
     geom_point(position = position_jitter(w=0.1,h=0)) + 
-    scale_y_log10() +
     ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
     xlab("Modality") +
+    ylab("Counts") +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_text(size = 15),
-          plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
-  } else if(input$plot == "barplot") {
-    ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-           aes_string(x = input$deseq_var, y = "count", fill = input$deseq_var)) +
-      geom_point(position = position_jitter(w=0.1,h=0)) +
-      scale_y_log10() +
-      ggtitle(paste("Plot of ", input$sel_gene, " counts")) +
-      xlab("Modality") +
-      theme(axis.title.x = element_text(size = 15),
-            axis.title.y = element_text(size = 15),
-            plot.title = element_text(face = "bold", size = 20, hjust = 0.5)) +
-      # Many assumptions here, but at least not normality (mean_cl_boot)
-      stat_summary(fun = mean, geom = "bar", alpha = input$alpha) +
-      stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05)
-  } else if(input$plot == "boxplot" ) {
-    ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
-           aes_string(x = input$deseq_var, y = "count", fill = input$deseq_var)) +
-      ggtitle(paste("Plot of ", input$sel_gene, " counts")) +
-      xlab("Modality") +
-      theme(axis.title.x = element_text(size = 15),
-            axis.title.y = element_text(size = 15),
-            plot.title = element_text(face = "bold", size = 20, hjust = 0.5)) +
-      geom_boxplot()
-      
+          plot.title = element_text(face = "bold", size = 20, hjust = 0.5),
+          axis.text = element_text(size = 12),
+          legend.text = element_text(size = 10),
+          legend.title = element_text(size = 12))
+  if(input$plot == "base") {
+    plot_fin <- plot_fin + scale_y_log10()
   }
-}, res = 96)
+  if(input$plot == "barplot"){
+    plot_fin <- plot_fin + stat_summary(aes_string(fill = input$deseq_var),
+                                            fun = mean,
+                                            geom = "bar",
+                                            alpha = input$alpha) +
+      stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05)
+  }
+  if(input$plot == "boxplot") {
+   plot_fin <- plot_fin + geom_boxplot(aes_string(fill = input$deseq_var))
+  }
+  plot_fin
+})
+
+
+output$down_plot <- downloadHandler(
+  filename = function() {
+    paste(req(input$sel_gene), ".svg", sep = "")
+  },
+  content = function(file) {
+    ggsave(plot = req(plot_counts()), filename = file, device = "svg")
+  }
+)

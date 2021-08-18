@@ -106,7 +106,10 @@ tab_sgc <- tabItem("sgc",
                                    value = .2)
                      ),
                      mainPanel(
-                       plotOutput(outputId = "plot_gene")
+                       plotOutput(outputId = "plot_gene"),
+                       
+                       downloadButton(outputId = "down_plot",
+                                      label = "Download Plot")
                      )
                    )
 )
