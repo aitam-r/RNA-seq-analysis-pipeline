@@ -23,3 +23,7 @@ todo.*\\.org
 /SraRunTable.txt
 /coldata.csv
 /dag.svg
+/.my_emacs.d/
+/data/refgenie/
+/data/seqs/
+/test.py

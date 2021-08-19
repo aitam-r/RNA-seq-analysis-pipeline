@@ -8,6 +8,12 @@ rule all:
       expand("data/quants/{dataset}/quant.sf", dataset=DATASETS),
       expand("analysis/{dirs}/multiqc_report.html", dirs=DIRS)
 
+rule refgenie:
+    output:
+        "data/index/salmon_partial_sa_index__default/default"
+    shell:
+        "refgenie pull hg38/salmon_partial_sa_index -c data/refgenie/config.yaml"
+
 rule multiqc:
     input:
         expand("analysis/{{dirs}}/{dataset}_fastqc.zip", dataset=DATASETS)

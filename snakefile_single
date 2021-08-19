@@ -1,0 +1,73 @@
+configfile: "snake_config.yaml"
+
+with open(config["samples_names"], "r") as filin:
+    SAMPLES = filin.read().splitlines()
+
+
+
+rule all:
+  input:
+      expand("data/quants/{sample}/quant.sf", sample=SAMPLES),
+      "analysis/seqs/multiqc_report.html"
+
+rule refgenie_init:
+    output:
+        "data/refgenie/config.yaml"
+    shell:
+        "refgenie init -c {output}"
+            
+rule refgenie:
+    input:
+        "data/refgenie/config.yaml"
+    output:
+        "data/refgenie/alias/hg38/salmon_partial_sa_index/default"
+    shell:
+        "refgenie pull hg38/salmon_partial_sa_index -c {input}"
+
+rule multiqc:
+    input:
+        expand("analysis/seqs/{sample}_fastqc.zip", sample=SAMPLES)
+    output:
+        "analysis/seqs/multiqc_report.html"
+    shell:
+        "multiqc ./analysis/seqs -o analysis/seqs" 
+
+rule fastqc:
+    input:
+        "data/seqs/{sample}.fastq.gz"
+    output:
+        temp("analysis/seqs/{sample}_fastqc.zip")
+    threads: 1
+    shell:
+        "fastqc -o analysis/seqs -t {threads} {input}"
+
+
+rule cutadapt:
+    input:
+        "data/seqs/{sample}.fastq.gz"
+    output:
+        pipe("data/trim/{sample}.fastq.gz")
+    threads: 1
+    params:
+        a1="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA",
+        ml="20" #minimum length
+    shell:
+        "cutadapt -a {params.a1} -m {params.ml} -o "
+        "{output} --length-tag 'length=' "
+        "--cores={threads} {input}" 
+
+
+
+rule salmon:
+    input:
+        sample = "data/trim/{sample}.fastq.gz",
+        index = "data/refgenie/alias/hg38/salmon_partial_sa_index/default"
+    output:
+        "data/quants/{sample}/quant.sf"
+    params:
+        dir = "data/quants/{sample}"
+    threads: 1
+    shell:
+        "salmon quant -i {input.index} -l A -p {threads} --validateMappings "
+        " --numGibbsSamples 20 -o {params.dir} "
+        "-r {input.sample}"
