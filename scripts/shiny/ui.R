@@ -6,7 +6,7 @@ source("ui_wgcna.R", local = TRUE)
 # UI -----------------------------------------------------------------------------
 
 ui <- dashboardPage(
-  dashboardHeader(title = "My little App"),
+  dashboardHeader(title = "RNAinsights"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("General Set-up", tabName = "gsu"),

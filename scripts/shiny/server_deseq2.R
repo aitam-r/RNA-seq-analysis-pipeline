@@ -151,7 +151,7 @@ output$dist <- renderPlot({
            show_rownames = FALSE,
            show_colnames = TRUE,
            annotation_col = my_values$coldata %>%
-             select("names", input$variables) %>%
+             dplyr::select("names", input$variables) %>%
              tibble::column_to_rownames("names"),
            clustering_distance_rows=sampleDists,
            clustering_distance_cols=sampleDists,
