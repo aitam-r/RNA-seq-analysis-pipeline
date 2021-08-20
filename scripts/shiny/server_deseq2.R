@@ -2,12 +2,6 @@
 iv$add_rule("sft_thres", sv_between(left = 1, right = 30))
 iv$enable()
 
-# enforces that base condition and compare condition are different
-observe(iv$add_rule("compare_cond",
-            sv_not_equal(rhs = input$base_cond,
-                                         message_fmt = "This condition should be different from the base one")))
-
-
 
 observe({
   req(my_values$coldata)
@@ -41,9 +35,11 @@ observe({
 observe({
   req(my_values$coldata)
   req(input$deseq_var)
+  req(input$base_cond)
+  poss_val <- which(my_values$coldata[, input$deseq_var] != req(input$base_cond))
   updateSelectInput(session = session,
                     inputId = "compare_cond",
-                    choices = unique(my_values$coldata[,input$deseq_var]))
+                    choices = unique(my_values$coldata[,input$deseq_var][poss_val]))
 })
 
 #The table of genes, displayed on DEG panel
@@ -81,7 +77,7 @@ dds <- eventReactive(input$execute_d, {
     }
     else {
       if(testing) {
-        load(file = "./dds.RData")
+        load(file = "../../../liver/scripts/shiny/dds.RData")
         return(tmp2)
       }
       else {
@@ -132,28 +128,24 @@ observeEvent(dds(), {
                        multiVals="first")
 })
 
-<<<<<<< HEAD
-=======
 output$table_title <- renderUI({
   h3("Counts by sample")
 })
 
->>>>>>> 0d6edcd0e59af5e552ecd3a86c3d7afc48de0e5c
 output$sample_counts <- renderTable({
+  req(dds())
   tab <- rbind(
-    colSums(counts(req(dds()), normalized = TRUE)),
-    colSums(counts(req(dds()), normalized = FALSE))
+    colSums(counts(dds(), normalized = TRUE)),
+    colSums(counts(dds(), normalized = FALSE))
   )
   rownames(tab) <- c("Normalized", "Non-normalized")
-  tab
-<<<<<<< HEAD
-})
-=======
+  tab %>% t()
 }, rownames = TRUE, striped = TRUE)
->>>>>>> 0d6edcd0e59af5e552ecd3a86c3d7afc48de0e5c
+
 
 output$disp_plot <- renderPlot({
-  plotDispEsts(req(dds()))
+  req(dds())
+  plotDispEsts(dds())
 })
 
 
@@ -179,10 +171,25 @@ output$dist <- renderPlot({
            col=colors)
 }, res = 96, height = 600)
 
-output$pca <- renderPlot({
+pca_data <- reactive({
   req(rld_vst())
-  plotPCA(rld_vst(), intgroup = input$variables, ntop = 1000)
+  plotPCA(rld_vst(), intgroup = input$variables, ntop = 1000, returnData = TRUE)
+})
+
+output$pca <- renderPlot({
+  req(pca_data())
+  percentVar <- attr(pca_data(), "percentVar")
+  ggplot(data=pca_data(), aes_string(x="PC1", y="PC2", color="group")) + geom_point(size=3) + 
+    xlab(paste0("PC1: ",round(percentVar[1] * 100),"% variance")) +
+    ylab(paste0("PC2: ",round(percentVar[2] * 100),"% variance")) +
+    coord_fixed()
 }, res = 96, height = 600)
+
+
+output$pca_info <- renderUI({
+  req(pca_data())
+  HTML(paste0(nearPoints(pca_data(), input$pca_hover)[,"name"]))
+})
 
 output$ma <- renderPlot({
   req(my_values$res)

@@ -1,22 +1,26 @@
 # load libraries -----------------------------------------------------------------
-library(shiny)
-library(BiocManager)
-library(DESeq2)
-library(RColorBrewer)
-library(pheatmap)
-library(tximeta)
-library(tximport)
-library(magrittr)
-library(stringr)
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library("org.Hs.eg.db")
-library(shinythemes)
-library(GWENA)
-library(gprofiler2)
-library(plotly)
-library(shinyvalidate)
-library(shinydashboard)
-library(dashboardthemes)
+if(!require(anyLib)) install.packages("anyLib")
+needed_pkgs <- c("DESeq2",
+                 "tximeta",
+                 "tximport",
+                 "TxDb.Hsapiens.UCSC.hg38.knownGene",
+                 "org.Hs.eg.db",
+                 "GWENA",
+                 "shiny",
+                 "BiocManager",
+                 "RColorBrewer",
+                 "ggplot2",
+                 "pheatmap",
+                 "magrittr",
+                 "stringr",
+                 "gprofiler2",
+                 "plotly",
+                 "shinyvalidate",
+                 "shinydashboard",
+                 "dashboardthemes")
+
+instaloaded_ok <- anyLib::anyLib(needed_pkgs, autoUpdate = FALSE)
+stopifnot(all(instaloaded_ok))
 
 # Functions ----------------------------------------------------------------------
 
@@ -78,5 +82,5 @@ get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
 # update max upload size to 50mB
 options(shiny.maxRequestSize = 50*1024^2)
 enr_sources <- c("GO", "KEGG", "REAC", "TF", "MIRNA", "CORUM", "HP", "HPA", "WP")
-testing <-FALSE 
+testing <- TRUE 
 txi_met_chosen <- TRUE

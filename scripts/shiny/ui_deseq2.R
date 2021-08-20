@@ -7,18 +7,18 @@ tab_deseq2_su <- tabItem("deseq2_su",
                         
                          # Choose the variable across which differential expression is calculated 
                          selectInput(inputId = "deseq_var",
-                                     label = "Choose the variable for differential Expression",
+                                     label = "Choose the variable for differential expression",
                                      choices = NULL),
                                      
                          
                          # Choose base level for condition
                          selectInput(inputId = "base_cond",
-                                     label = "Choose the base condition :",
+                                     label = "Choose the base level :",
                                      choices = NULL),
                          
                          # Choose base level for condition
                          selectInput(inputId = "compare_cond",
-                                     label = "Choose the condition to compare with:",
+                                     label = "Choose the level to compare with:",
                                      choices = NULL,
                                      selected = NULL),
                          
@@ -33,30 +33,37 @@ tab_deseq2_su <- tabItem("deseq2_su",
 )
 
 tab_explo <- tabItem("explo",
-<<<<<<< HEAD
-=======
-                     htmlOutput("table_title"),
->>>>>>> 0d6edcd0e59af5e552ecd3a86c3d7afc48de0e5c
-                     tableOutput("sample_counts"),
-                     plotOutput("disp_plot")
+                       box(title = "Counts by sample",
+                         tableOutput("sample_counts"),
+                         width = 4),
+                       box(title = "Dispersion Estimates Plot",
+                         plotOutput("disp_plot"),
+                         width = 8)
 )
 
 tab_plots <- tabItem("plots",
                      tabBox(width = NULL,
-                       tabPanel("Sample-to-sample distances", 
-                                plotOutput(outputId = "dist")),
-                       
-                       tabPanel("PCA", 
-                                plotOutput(outputId = "pca")),
-                       
-                       tabPanel("MAplot", 
-                                plotOutput(outputId = "ma")),
-                       
-                       tabPanel("Volcano Plot", 
-                                plotOutput(outputId = "volcano"))
-                       )
+                            tabPanel("Sample-to-sample distances", 
+                                     plotOutput(outputId = "dist")),
+                            
+                            tabPanel("PCA",
+                                     box(width = 10,
+                                         plotOutput(outputId = "pca",
+                                                    hover = "pca_hover")
+                                     ),
+                                     box(width = 2,
+                                         htmlOutput("pca_info")
+                                     )
+                            ),
+                            
+                            tabPanel("MAplot", 
+                                     plotOutput(outputId = "ma")),
+                            
+                            tabPanel("Volcano Plot", 
+                                     plotOutput(outputId = "volcano"))
+                     )
 )
-                        
+
 
 tab_deg <- tabItem("deg",
                    sidebarLayout(
