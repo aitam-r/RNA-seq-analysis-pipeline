@@ -12,6 +12,7 @@ ui <- dashboardPage(
       menuItem("General Set-up", tabName = "gsu"),
       menuItem("DESeq2", tabName = "deseq2",
                menuSubItem("DESeq2 Set-up", tabName = "deseq2_su"),
+               menuSubItem("Exploration", tabName = "explo"),
                menuSubItem("Many plots", tabName = "plots"),
                menuSubItem("DEG table", tabName = "deg"),
                menuSubItem("Single gene counts", tabName = "sgc")),
@@ -27,6 +28,7 @@ ui <- dashboardPage(
     tabItems(
       tab_gsu,
       tab_deseq2_su,
+      tab_explo,
       tab_plots,
       tab_deg,
       tab_sgc,

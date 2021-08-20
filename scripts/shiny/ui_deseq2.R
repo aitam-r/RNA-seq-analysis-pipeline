@@ -31,7 +31,11 @@ tab_deseq2_su <- tabItem("deseq2_su",
                          actionButton(inputId = "execute_d",
                                       label = "Run DESeq2")
 )
-                        
+
+tab_explo <- tabItem("explo",
+                     tableOutput("sample_counts"),
+                     plotOutput("disp_plot")
+)
 
 tab_plots <- tabItem("plots",
                      tabBox(width = NULL,
