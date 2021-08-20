@@ -60,7 +60,7 @@ observeEvent(input$import, {
 gse <- eventReactive(my_values$se, {
   withProgress(message = "Summarising to gene", {
   gse <- summarizeToGene(my_values$se)
-  gse$condition %<>% factor()
+  # gse$condition %<>% factor()
   })
   return(gse)
 })

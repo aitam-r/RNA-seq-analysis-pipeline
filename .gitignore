@@ -27,3 +27,8 @@ todo.*\\.org
 /data/refgenie/
 /data/seqs/
 /test.py
+*.svg
+*.png
+/rapport_soham.odt
+/rapport_soham.org
+/srb_acc_list.txt

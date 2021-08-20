@@ -64,7 +64,6 @@ dds <- eventReactive(input$execute_d, {
   # my_values$coldata[, input$deseq_var] %<>% relevel(input$base_cond) #usefulness?
   withProgress(message = "Running DESeq2", {
     if(input$snakemake) {
-      withProgress(message = "Loading data...", {
         if(!txi_met_chosen) {
           tmp <- DESeqDataSetFromTximport(txi,
                                           my_values$coldata,
@@ -73,13 +72,12 @@ dds <- eventReactive(input$execute_d, {
                                                       collapse = " + ")) %>%
                                             as.formula())
         } else {
-          tmp <- DESeqDataSet(gse(), 
+          tmp <- DESeqDataSet(req(gse()), 
                               design = paste("~ ",
                                              paste(req(input$variables),
                                                    collapse = " + ")) %>% 
                                 as.formula())
         }
-      })
     }
     else {
       if(testing) {
