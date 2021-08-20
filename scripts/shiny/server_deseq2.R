@@ -132,6 +132,13 @@ observeEvent(dds(), {
                        multiVals="first")
 })
 
+<<<<<<< HEAD
+=======
+output$table_title <- renderUI({
+  h3("Counts by sample")
+})
+
+>>>>>>> 0d6edcd0e59af5e552ecd3a86c3d7afc48de0e5c
 output$sample_counts <- renderTable({
   tab <- rbind(
     colSums(counts(req(dds()), normalized = TRUE)),
@@ -139,7 +146,11 @@ output$sample_counts <- renderTable({
   )
   rownames(tab) <- c("Normalized", "Non-normalized")
   tab
+<<<<<<< HEAD
 })
+=======
+}, rownames = TRUE, striped = TRUE)
+>>>>>>> 0d6edcd0e59af5e552ecd3a86c3d7afc48de0e5c
 
 output$disp_plot <- renderPlot({
   plotDispEsts(req(dds()))

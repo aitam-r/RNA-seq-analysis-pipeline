@@ -33,6 +33,10 @@ tab_deseq2_su <- tabItem("deseq2_su",
 )
 
 tab_explo <- tabItem("explo",
+<<<<<<< HEAD
+=======
+                     htmlOutput("table_title"),
+>>>>>>> 0d6edcd0e59af5e552ecd3a86c3d7afc48de0e5c
                      tableOutput("sample_counts"),
                      plotOutput("disp_plot")
 )
