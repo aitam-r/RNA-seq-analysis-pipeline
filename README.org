@@ -33,5 +33,4 @@ The steps of the pipeline are as follow :
 
 
 ** From a raw counts table
-1. Download the R packages needed (see sessionInfo.txt) (or open =scripts/global.R= in RStudio and download missing packages)
 2. Run ~R -e "shiny::runApp('/scripts/shiny')"~ 
