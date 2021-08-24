@@ -33,7 +33,7 @@ rule multiqc:
     output:
         "analysis/seqs/multiqc_report.html"
     shell:
-        "multiqc ./analysis/{params.dirs} -o analysis/{params.dirs}" 
+        "multiqc ./analysis/seqs -o analysis/seqs" 
 
 rule fastqc:
     input:
@@ -42,7 +42,7 @@ rule fastqc:
         temp("analysis/seqs/{sample}_fastqc.zip")
     threads: 1
     shell:
-        "fastqc -o analysis/{params.dirs} -t {threads} {input}"
+        "fastqc -o analysis/seqs -t {threads} {input}"
 
 rule cutadapt:
     input:
