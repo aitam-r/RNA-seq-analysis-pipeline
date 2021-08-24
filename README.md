@@ -14,16 +14,16 @@ The steps of the pipeline are as follow :
 
 1.  Download with `prefetch` and decompress with `fastq-dump`
 2.  Quality control with `fastqc` and `multiqc`
-3.  Adapter trimming with `cutadapt` <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
-4.  Pseudo-mapping and quantification with `salmon`
-5.  Importation/transcript quantification are done with `tximeta`
-6.  DEG analysis with `DESeq2`
-7.  Clustering analysis with `WGCNA`
+3.  Adapter trimming with `cutadapt`<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
+4.  Pseudo-mapping and quantification with `salmon`<sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>
+5.  Importation/transcript quantification are done with `tximeta`<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>
+6.  DEG analysis with `DESeq2`<sup><a id="fnr.4" class="footref" href="#fn.4">4</a></sup>
+7.  Clustering analysis with `WGCNA`<sup><a id="fnr.5" class="footref" href="#fn.5">5</a></sup> and `GWENA`<sup><a id="fnr.6" class="footref" href="#fn.6">6</a></sup>
 
 
 ## Workflow tools
 
--   steps 2-3-4 are performed via `Snakemake`
+-   steps 2-3-4 are performed via `Snakemake`<sup><a id="fnr.7" class="footref" href="#fn.7">7</a></sup>, using also `refgenie`<sup><a id="fnr.8" class="footref" href="#fn.8">8</a></sup>
 -   steps 5-6 through a `shiny` interface
 
 
@@ -81,13 +81,13 @@ The steps of the pipeline are as follow :
 
 <tr>
 <td class="org-left">SRR7798789</td>
-<td class="org-left">PDGF<sub>BB</sub></td>
+<td class="org-left">PDGF\<sub>BB</sub></td>
 </tr>
 
 
 <tr>
 <td class="org-left">SRR7798790</td>
-<td class="org-left">TGF<sub>beta</sub></td>
+<td class="org-left">TGF\<sub>beta</sub></td>
 </tr>
 
 
@@ -99,13 +99,13 @@ The steps of the pipeline are as follow :
 
 <tr>
 <td class="org-left">SRR7798792</td>
-<td class="org-left">PDGF<sub>BB</sub></td>
+<td class="org-left">PDGF\<sub>BB</sub></td>
 </tr>
 
 
 <tr>
 <td class="org-left">SRR7798793</td>
-<td class="org-left">TGF<sub>beta</sub></td>
+<td class="org-left">TGF\<sub>beta</sub></td>
 </tr>
 
 
@@ -117,13 +117,13 @@ The steps of the pipeline are as follow :
 
 <tr>
 <td class="org-left">SRR7798795</td>
-<td class="org-left">PDGF<sub>BB</sub></td>
+<td class="org-left">PDGF\<sub>BB</sub></td>
 </tr>
 
 
 <tr>
 <td class="org-left">SRR7798796</td>
-<td class="org-left">TGF<sub>beta</sub></td>
+<td class="org-left">TGF\<sub>beta</sub></td>
 </tr>
 </tbody>
 </table>
@@ -136,3 +136,17 @@ Ideally, one should not use symbols such as `-`, `/` and spaces in the names or 
 # Footnotes
 
 <sup><a id="fn.1" href="#fnr.1">1</a></sup> <https://doi.org/10.14806/ej.17.1.200>
+
+<sup><a id="fn.2" href="#fnr.2">2</a></sup> <https://doi.org/10.1038/nmeth.4197>
+
+<sup><a id="fn.3" href="#fnr.3">3</a></sup> <https://doi.org/10.1371/journal.pcbi.1007664>
+
+<sup><a id="fn.4" href="#fnr.4">4</a></sup> <https://doi.org/10.1186/s13059-014-0550-8>
+
+<sup><a id="fn.5" href="#fnr.5">5</a></sup> <https://doi.org/10.1186/1471-2105-9-559>
+
+<sup><a id="fn.6" href="#fnr.6">6</a></sup> <https://doi.org/10.1186/s12859-021-04179-4>
+
+<sup><a id="fn.7" href="#fnr.7">7</a></sup> <https://doi.org/10.1093/bioinformatics/bts480>
+
+<sup><a id="fn.8" href="#fnr.8">8</a></sup> <https://doi.org/10.1093/gigascience/giz149>
