@@ -1,26 +1,25 @@
 # load libraries -----------------------------------------------------------------
-if(!require(anyLib)) install.packages("anyLib")
-needed_pkgs <- c("DESeq2",
-                 "tximeta",
-                 "tximport",
-                 "TxDb.Hsapiens.UCSC.hg38.knownGene",
-                 "org.Hs.eg.db",
-                 "GWENA",
-                 "shiny",
-                 "BiocManager",
-                 "RColorBrewer",
-                 "ggplot2",
-                 "pheatmap",
-                 "magrittr",
-                 "stringr",
-                 "gprofiler2",
-                 "plotly",
-                 "shinyvalidate",
-                 "shinydashboard",
-                 "dashboardthemes")
+library(shiny)
+library(BiocManager)
+library(DESeq2)
+library(RColorBrewer)
+library(pheatmap)
+library(tximeta)
+library(tximport)
+library(magrittr)
+library(stringr)
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+library(org.Hs.eg.db)
+library(shinythemes)
+library(GWENA)
+library(gprofiler2)
+library(ggplot2)
+library(plotly)
+library(shinyvalidate)
+library(shinydashboard)
+library(dashboardthemes)
 
-instaloaded_ok <- anyLib::anyLib(needed_pkgs, autoUpdate = FALSE)
-stopifnot(all(instaloaded_ok))
+
 
 # Functions ----------------------------------------------------------------------
 
