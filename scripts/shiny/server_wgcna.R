@@ -147,6 +147,7 @@ output$threshold <- renderText({
   }
 })
 
+# Display only if the table is displayed
 output$sft_table_title <- renderUI({
   req(sft())
   HTML(paste0("<h2> WGCNA's pickSoftThreshold fitIndices table </h2>"))
@@ -160,6 +161,7 @@ output$sft_table <- renderTable({
   bordered = TRUE)
 
 
+# Creates a correspondance table with modules pre and postmerging
 modules_pre_post <- reactive({
   req(modules())
   module_post_df <- stack(modules()$modules)
@@ -190,10 +192,10 @@ output$merge <- renderPlot({
   
 }, res = 96, height = 600)
 
+
 output$sizes <- renderPlot({
-  
 ggplot(data.frame(modules()$modules %>% stack), 
-                ggplot2::aes(x = ind)) + ggplot2::stat_count() +
+                aes(x = ind)) + stat_count() +
   ylab("Number of genes") +
   xlab("Module")
 }, res = 96)
@@ -217,7 +219,7 @@ output$Enrichment <- renderPlotly({
   }
 })
 
-# to be able to write to csv
+# to be able to write to csv one needs to collapse a list
 enrich_down <- reactive({
   tmp <- modules_enriched()$result %>% filter(query == input$select_mod)
   tmp$parents <- vapply(tmp$parents, paste, collapse = ", ", character(1L))

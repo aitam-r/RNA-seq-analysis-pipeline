@@ -2,6 +2,8 @@
 - Parellelism : sometimes only one core (=pickSoftThreshold=), sometimes all, (=build_network=, despite instructions)
 - Integration of snakemake into the app (long)
 - Make tximport work instead of tximeta
+- Make the ui a bit more consistent (box or div everywhere)
+- Make a enrichment thingy also for differential expression (interface it with gprofiler too)
 
 
 * Snakemake

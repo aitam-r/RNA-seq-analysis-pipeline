@@ -1,7 +1,7 @@
 
 server <- function(input, output, session) {
   
-  # Object to store reactives that can change
+  # Object to store reactives that can change without being recreated
   my_values <- reactiveValues(coldata = NULL,
                               se = NULL,
                               variable_chosen = NULL,

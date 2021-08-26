@@ -5,7 +5,7 @@ tab_gsu <- tabItem("gsu",
                                      label = "I have used the built-in RNA quantification",
                                      value = TRUE),
                        br(),
-                       p("Please provide the sample data table (.csv or .tsv). It should have a column containing identifiers (called names) for each sample, and then variable(s) in further columns"),
+                       p("Please provide the sample table (.csv or .tsv). It should have a column containing identifiers (called names) for each sample, and then variable(s) in further columns"),
                        p("Furthermore, the column names should not have spaces or -"),
                        br(),
                        fileInput("upload_samp_tab", NULL, accept = c(".csv", ".tsv"))

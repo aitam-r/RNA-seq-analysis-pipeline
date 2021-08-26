@@ -4,7 +4,7 @@ tab_deseq2_su <- tabItem("deseq2_su",
                                      label = "Choose the variables of the experimental design :",
                                      choices = NULL,
                                      multiple = TRUE),
-                        
+
                          # Choose the variable across which differential expression is calculated 
                          selectInput(inputId = "deseq_var",
                                      label = "Choose the variable for differential expression",
@@ -22,7 +22,7 @@ tab_deseq2_su <- tabItem("deseq2_su",
                                      choices = NULL,
                                      selected = NULL),
                          
-                         # rld or vst?
+                         # rlog or vst?
                          selectInput(inputId = "r_v",
                                      label = "Choose the variance stabilizing transformation wanted for the PCA (vst is much faster) :",
                                      choices = c("rlog", "vst"),
@@ -85,9 +85,11 @@ tab_deg <- tabItem("deg",
                      mainPanel(
                        
                        textOutput(outputId = "nb_genes"),
+                       
                        br(),
                        htmlOutput("genes_na"),
                        br(),
+                       
                        DT::dataTableOutput(outputId = "genes"),
                        
                        downloadButton(outputId = "download",
