@@ -188,7 +188,7 @@ output$pca <- renderPlot({
 
 output$pca_info <- renderUI({
   req(pca_data())
-  HTML(paste0(nearPoints(pca_data(), input$pca_hover)[,"name"]))
+  HTML(paste0(nearPoints(pca_data(), input$pca_click)[,"name"]))
 })
 
 output$ma <- renderPlot({
@@ -286,7 +286,7 @@ plot_counts <- reactive({
   plot_fin <- ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
                      aes_string(x = input$deseq_var, y = "count")) + 
     geom_point(position = position_jitter(w=0.1,h=0)) + 
-    ggtitle(paste("Plot of ", input$sel_gene, " counts")) + 
+    ggtitle(paste("Plot of", input$sel_gene, "counts")) + 
     xlab("Modality") +
     ylab("Counts") +
     theme(axis.title.x = element_text(size = 15),

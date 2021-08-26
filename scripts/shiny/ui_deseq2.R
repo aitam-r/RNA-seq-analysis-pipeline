@@ -49,7 +49,7 @@ tab_plots <- tabItem("plots",
                             tabPanel("PCA",
                                      box(width = 10,
                                          plotOutput(outputId = "pca",
-                                                    hover = "pca_hover")
+                                                    click = "pca_click")
                                      ),
                                      box(width = 2,
                                          htmlOutput("pca_info")
