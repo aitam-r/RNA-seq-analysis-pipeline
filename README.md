@@ -42,7 +42,7 @@ The steps of the pipeline are as follow :
     2.  **In progress** there are options for single and paired-end download
     3.  Run `python scripts/download_dump.py` from the project root
 5.  Install [Mamba](https://mamba.readthedocs.io/en/latest/installation.html)
-6.  Run `mamba env create --name name_of_env --file salmon_env.yml` in a terminal
+6.  Run `mamba env create -f salmon_env.yml` in a terminal
 7.  Run `conda activate name_of_env`
 8.  Edit the config file
     For instance with the file containing the names of the samples
