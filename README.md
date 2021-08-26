@@ -43,7 +43,7 @@ The steps of the pipeline are as follow :
     3.  Run `python scripts/download_dump.py` from the project root
 5.  Install [Mamba](https://mamba.readthedocs.io/en/latest/installation.html)
 6.  Run `mamba env create -f salmon_env.yml` in a terminal
-7.  Run `conda activate name_of_env`
+7.  Run `conda activate stage_medinsights`
 8.  Edit the config file
     For instance with the file containing the names of the samples
 9.  Run `snakemake --snakefile <snakefile-chosen> --cores number_of_cores_chosen`
