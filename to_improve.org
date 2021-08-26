@@ -1,0 +1,11 @@
+* Shiny App
+- Parellelism : sometimes only one core (=pickSoftThreshold=), sometimes all, (=build_network=, despite instructions)
+- Integration of snakemake into the app (long)
+- Make tximport work instead of tximeta
+
+
+* Snakemake
+- Include download as an option in the main snakemake
+- Unite the two snakefile (paired/single) as a single file, and make the pair/single an option (how)
+- Pipe cutadapt or just temp (which enables QC)?? Decide, or make it an option
+- Use the config file for more things (threads, cutadapt QC)

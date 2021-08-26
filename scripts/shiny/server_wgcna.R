@@ -1,21 +1,23 @@
 # Calculs ------
 
+# Obtains normalized counts, depending on the provenance
 observe({
   req(input$upload_samp_tab)
+  
+  # If the counts are from the pipeline
   if(input$snakemake) {
   req(my_values$se) 
-    if(!txi_met_chosen){
+    if(!txi_met_chosen){ # From tximport
       txi_scaled <- tximport(req(my_values$coldata$files),
                              type = "salmon",
                              tx2gene = tx2gene(),
                              countsFromAbundance = "lengthScaledTPM")
       raw_counts <- txi_scaled$counts %>% round()
-    } else {
+    } else{ # From tximeta
       gse_scaled <- summarizeToGene(my_values$se, countsFromAbundance = "lengthScaledTPM")
       raw_counts <- assay(gse_scaled, "counts") %>% round()
     }
-  } else {
-    # one should use bias corrected counts, not salmon counts directly
+  } else { # If counts are given in the shiny app
     req(my_values$counts)
     raw_counts <- isolate(my_values$counts) %>% round()
   }
@@ -30,6 +32,7 @@ observe({
   my_values$counts_norm <- t(raw_counts)/quantile_expressed
 })
 
+# Check the minimum number of samples for WGCNA analysis
 output$warning <- renderText({
   req(my_values$counts_norm)
   if(nrow(my_values$counts_norm) < 20) {
@@ -37,6 +40,7 @@ output$warning <- renderText({
   }
 })
 
+# Classic hclust plot to screen for outliers
 output$outliers <- renderPlot({
   req(input$explore_w)
   sampleTree <- hclust(dist(my_values$counts_norm), method = "average")
@@ -45,6 +49,7 @@ output$outliers <- renderPlot({
        cex.axis = 1.5, cex.main = 2)
 })
 
+# Remove a sample
 observeEvent(input$rm_sample, {
   my_values$counts_norm <- 
     my_values$counts_norm[!(rownames(my_values$counts_norm) %in%
@@ -68,6 +73,8 @@ net <- eventReactive(input$build, {
               n_threads = 1)
   })
 })
+
+
 modules <- eventReactive(net(), {
   withProgress(message = "Detecting Modules", {
     detect_modules(my_values$counts_filt,
@@ -87,19 +94,18 @@ modules_enriched <- eventReactive({
   })
 
 observeEvent(my_values$counts_norm, {
-  # Update the maximum of gene one can keep
-  # default value of 8 000 genes not to crush computer resources
-  m <- round(8000/ncol(req(my_values$counts_norm)), 1)
+  # Update the maximum number of gene one can keep
+  m <- req(ncol(my_values$counts_norm))
   updateSliderInput(session,
-                    "percent_g",
+                    "number_g",
                     max = m)
 })
 
 observe({
   req(my_values$counts_norm)
-  req(input$percent_g)
+  req(input$number_g)
   my_values$counts_filt <- filter_low_var(my_values$counts_norm,
-                 pct = input$percent_g,
+                 pct = input$number_g/ncol(my_values$counts_norm),
                  type = "median")
 })
 

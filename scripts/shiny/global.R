@@ -81,5 +81,5 @@ get_sub_clusters <- function(network, seq_k = seq_len(15), fit_plot = TRUE,
 # update max upload size to 50mB
 options(shiny.maxRequestSize = 50*1024^2)
 enr_sources <- c("GO", "KEGG", "REAC", "TF", "MIRNA", "CORUM", "HP", "HPA", "WP")
-testing <- TRUE 
+testing <- FALSE 
 txi_met_chosen <- TRUE

@@ -16,14 +16,15 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                                            multiple = T,
                                            options = NULL), #list(maxItems = length(coldata$names) - 3)),
                             
-                            # Selects the top value % of variable genes. 
-                            # Max is dependent on a max number of genes (8000)
-                            sliderInput(inputId = "percent_g",
-                                        label = "Percentage of filtered genes, based on variation",
-                                        value = 0.1,
-                                        min = 0.1,
-                                        max = 0.2,
-                                        step = 0.05),
+                            # Selects the most variable (across all samples) genes. 
+                            h6(paste0("The computational load is proportional to square the number of genes. ",
+                               "Depending on your computational resources, you might want to limit this number")),
+                            sliderInput(inputId = "number_g",
+                                        label = "Number of genes used",
+                                        value = 8000,
+                                        min = 0,
+                                        max = 10000,
+                                        step = 50),
                             
                             selectInput(inputId = "type_net",
                                         label = "Type of Network",
