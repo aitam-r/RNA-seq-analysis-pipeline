@@ -4,12 +4,13 @@ with open(config["samples_names"], "r") as filin:
     SAMPLES = filin.read().splitlines()
 
 
+DIRS = ["seqs", "trim"]
    
 
 rule all:
   input:
       expand("data/quants/{sample}/quant.sf", sample=SAMPLES),
-      "analysis/seqs/multiqc_report.html"
+      expand("analysis/{dir}/multiqc_report.html", dir=DIRS)
 
 
 rule refgenie_init:
@@ -29,28 +30,32 @@ rule refgenie:
 
 rule multiqc:
     input:
-        expand("analysis/seqs/{sample}_{idx}_fastqc.zip", sample=SAMPLES, idx=["1","2"])
+        expand("analysis/{{dirs}}/{sample}_{idx}_fastqc.zip", sample=SAMPLES, idx=["1","2"])
     output:
-        "analysis/seqs/multiqc_report.html"
+        "analysis/{dirs}/multiqc_report.html"
+    params:
+        dirs="{dirs}"
     shell:
-        "multiqc ./analysis/seqs -o analysis/seqs" 
+        "multiqc ./analysis/{params.dirs} -o analysis/{params.dirs}" 
 
 rule fastqc:
     input:
-        "data/seqs/{sample}.fastq.gz"
+        "data/{dirs}/{sample}.fastq.gz"
     output:
-        temp("analysis/seqs/{sample}_fastqc.zip")
+        "analysis/{dirs}/{sample}_fastqc.zip"
+    params:
+        dirs="{dirs}"
     threads: 1
     shell:
-        "fastqc -o analysis/seqs -t {threads} {input}"
+        "fastqc -o analysis/{params.dirs} -t {threads} {input}"
 
 rule cutadapt:
     input:
         r1="data/seqs/{sample}_1.fastq.gz",
         r2="data/seqs/{sample}_2.fastq.gz"
     output:
-        o1=pipe("data/trim/{sample}_1.fastq.gz"),
-        o2=pipe("data/trim/{sample}_2.fastq.gz")
+        o1=temp("data/trim/{sample}_1.fastq.gz"),
+        o2=temp("data/trim/{sample}_2.fastq.gz")
     threads: 1
     params:
         a1="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA",
