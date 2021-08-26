@@ -57,21 +57,27 @@ tab_wgcna_su <- tabItem(tabName = "wgcna_su",
                         )
 )
 
-tab_mod <- tabItem("mod",
-                   tabBox(
-                     tabPanel("Modules mergers",
-                              plotOutput("merge")
-                     ),
-                     tabPanel("Module sizes",
-                              plotOutput("sizes")
-                              
-                     # Abandonned : the modules wouldn't correspond to GWENA's input.
-                     # ),
-                     # tabPanel("TOMplot",
-                     #          plotOutput("tomplot")
-                     )
-                   )
+tab_mod_merge <- tabItem("mod_merge",
+                         box(title = "Merging of module",
+                             width = 6,
+                             plotOutput("merge")
+                         ),
+                         box(title = "Corresponding modules",
+                             width = 6,
+                             tableOutput("merge_premerge")
+                         )
 )
+
+
+tab_mod_count <- tabItem("mod_count",
+                         plotOutput("sizes")
+                         
+                         # Abandonned : the modules wouldn't correspond to GWENA's input.
+                         # ),
+                         # tabPanel("TOMplot",
+                         #          plotOutput("tomplot")
+)
+
 
 tab_enr <- tabItem("enr",
                    sidebarLayout(
@@ -92,7 +98,10 @@ tab_enr <- tabItem("enr",
                                       choices = NULL)
                      ),
                      mainPanel(
-                       plotlyOutput("Enrichment")
+                       plotlyOutput("Enrichment"),
+                       
+                       downloadButton(outputId = "download_enr",
+                                      label = "Download enrichment table")
                      )
                    )
 )

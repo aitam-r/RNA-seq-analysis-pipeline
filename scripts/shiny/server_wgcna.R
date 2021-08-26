@@ -78,7 +78,6 @@ modules <- eventReactive(net(), {
 
 modules_enriched <- eventReactive({
   modules()
-  input$sources
   input$enrich}, { 
     withProgress(message = "Performing Enrichment", {
       bio_enrich(modules()$modules,
@@ -154,7 +153,30 @@ output$sft_table <- renderTable({
   striped = TRUE,
   bordered = TRUE)
 
+
+modules_pre_post <- reactive({
+  req(modules())
+  module_post_df <- stack(modules()$modules)
+  
+  module_pre_df <- stack(modules()$modules_premerge)
+  
+  gr_joined <- dplyr::left_join(module_pre_df, module_post_df, by = "values") %>%
+    dplyr::group_by(ind.y) %>%
+    summarise(modules_pre = unique(ind.x))
+  
+  colnames(gr_joined) <- c("Modules_post", "Modules_pre")
+  aggregate(Modules_pre~Modules_post, gr_joined, paste, collapse=", ")
+})
+
+
+output$merge_premerge <- renderTable({
+  modules_pre_post()
+}, bordered = TRUE,
+striped = TRUE)
+  
+
 output$merge <- renderPlot({
+  req(modules())
  plot_modules_merge(
     modules_premerge = modules()$modules_premerge, 
     modules_merged = modules()$modules,
@@ -188,3 +210,19 @@ output$Enrichment <- renderPlotly({
                     modules = input$select_mod)
   }
 })
+
+# to be able to write to csv
+enrich_down <- reactive({
+  tmp <- modules_enriched()$result %>% filter(query == input$select_mod)
+  tmp$parents <- vapply(tmp$parents, paste, collapse = ", ", character(1L))
+  tmp
+})
+
+output$download_enr <- downloadHandler(
+  filename = function() {
+    paste("enrichment_module_", input$select_mod, ".csv", sep = "")
+  },
+  content = function(file) {
+    write.csv(enrich_down(), file)
+  }
+)
