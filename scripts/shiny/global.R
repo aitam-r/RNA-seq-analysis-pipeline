@@ -18,19 +18,10 @@ library(plotly)
 library(shinyvalidate)
 library(shinydashboard)
 library(dashboardthemes)
+library(dplyr)
 library(janitor)
+library(scales)
 
-
-
-# Functions ----------------------------------------------------------------------
-
-volcanoplot <- function(res, lfcthresh = 2, sigthresh = 0.05, main = "Volcano Plot", legendpos = "bottomright", labelsig = TRUE, textcx = 1, ...) {
-    with(res, plot(log2FoldChange, -log10(pvalue), pch = 20, main = main, ...))
-    with(subset(res, padj < sigthresh), points(log2FoldChange, -log10(pvalue), pch = 20, col = "red", ...))
-    with(subset(res, abs(log2FoldChange) > lfcthresh), points(log2FoldChange, -log10(pvalue), pch = 20, col = "orange", ...))
-    with(subset(res, padj < sigthresh & abs(log2FoldChange) > lfcthresh), points(log2FoldChange, -log10(pvalue), pch = 20, col = "green", ...))
-    legend(legendpos, xjust = 1, yjust = 1, legend = c(paste("FDR<", sigthresh, sep = ""), paste("|LogFC|>", lfcthresh, sep = ""), "both"), pch = 20, col = c("red", "orange", "green"))
-}
 
 
 # Preliminary code ---------------------------------------------------------------
@@ -42,5 +33,5 @@ enr_sources <- c("GO", "KEGG", "REAC", "TF", "MIRNA", "CORUM", "HP", "HPA", "WP"
 # and avoids calculations
 testing <- FALSE 
 
-# This permits toggle between tximeta (TRUE) and tximport (FALSE) (does not work)
+# This permits toggle between tximeta (TRUE) and tximport (FALSE does not work)
 txi_met_chosen <- TRUE

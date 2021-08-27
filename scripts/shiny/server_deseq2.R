@@ -139,7 +139,8 @@ output$sample_counts <- renderTable({
     colSums(counts(dds(), normalized = FALSE))
   )
   rownames(tab) <- c("Normalized", "Non-normalized")
-  tab %>% t()
+  tab %>% t() %>% as.data.frame() %>%
+    mutate(dplyr::across(where(is.numeric), formatC, format = "e", digits = 2))
 }, rownames = TRUE, striped = TRUE)
 
 
@@ -199,11 +200,69 @@ output$ma <- renderPlot({
 
 output$volcano <- renderPlot({
   req(my_values$res)
-  volcanoplot(my_values$res,
-              lfcthresh=1,
-              sigthresh=0.05,
-              textcx=.8,
-              xlim=c(-2.3, 2))
+  
+  # Precalculation 
+  # x axis should be symmetrical
+  min_x <- my_values$res %>%
+    as.data.frame() %>%
+    pull(log2FoldChange) %>%
+    min() %>%
+    floor()
+  max_x <- my_values$res %>%
+    as.data.frame() %>%
+    pull(log2FoldChange) %>%
+    max() %>%
+    ceiling()
+  # maximum value of the x axis
+  max_val <- max(c(abs(min_x), abs(max_x)))
+  
+  # y axis shouldn't be too long
+  max_y <-  my_values$res %>%
+    as.data.frame() %>%
+    na.omit() %>%
+    transmute(log_padj = -log10(padj)) %>%
+    max() %>%
+    ceiling()
+  plot_max_y <- min(max_y, 50)
+  
+  # Choice of colors/transparency for up/down
+  cols <- c("up" = "#fe7f00", "down" = "#007ffe", "ns" = "black")
+  alphas <- c("up" = 1, "down" = 1, "ns" = 0.3)
+  
+  tmp <- my_values$res %>%
+    as.data.frame() %>%
+    mutate(sig_expr = factor(case_when(log2FoldChange >= 1 & padj <= 0.05 ~ "up",
+                                log2FoldChange <= -1 & padj <= 0.05 ~ "down",
+                                TRUE ~ "ns"))) %>%
+    mutate(sig_expr = relevel(sig_expr, "up")) %>%
+    ggplot(aes(x = log2FoldChange,
+               y = -log10(padj),
+               alpha = sig_expr,
+               fill = sig_expr)) +
+    geom_point(color = "black",
+               na.rm = TRUE,
+               shape = 21,
+               stroke = 0.1) +
+    geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+    geom_vline(xintercept = c(-1, 1), linetype = "dashed") +
+    scale_x_continuous(breaks = c(seq(-max_val, max_val, 4)),
+                       limits = c(-max_val, max_val)) +
+    scale_fill_manual(values = cols) +
+    scale_alpha_manual(values = alphas, guide = "none") +
+    labs(title = paste("Gene expression change in", input$compare_cond, "versus", input$base_cond, "samples"),
+         x = "Log2 Fold Change",
+         y = "-Log10(Adjusted p-value)",
+         fill = "Expression\nChange") +
+    theme_bw() +
+    theme(plot.title = element_text(face = "bold", size = 20, hjust = 0.5))
+  if (plot_max_y == 50) {
+    tmp <- tmp + scale_y_continuous(limits = c(NA, plot_max_y), oob = scales::squish) +
+    geom_hline(yintercept = plot_max_y, linetype = "dashed") +
+    annotate("text", x = max_val - 3, y = plot_max_y - 3,
+             size = 3,
+             label = "Genes above this line\nhave a log10(p-value)\n superior to 50")
+  }
+  tmp
 }, res = 96, height = 600)
 
 # outputs the number of genes without names
@@ -285,25 +344,27 @@ plot_counts <- reactive({
   
   plot_fin <- ggplot(data = d %>% filter(my_values$variable_chosen %in% input$condition_plot),
                      aes_string(x = input$deseq_var, y = "count")) + 
-    geom_point(position = position_jitter(w=0.1,h=0)) + 
     ggtitle(paste("Plot of", input$sel_gene, "counts")) + 
     xlab("Modality") +
-    ylab("Counts") +
+    ylab("Normalized counts") +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_text(size = 15),
           plot.title = element_text(face = "bold", size = 20, hjust = 0.5),
           axis.text = element_text(size = 12),
           legend.text = element_text(size = 10),
-          legend.title = element_text(size = 12))
+          legend.title = element_text(size = 12)) +
+    theme_bw()
   if(input$plot == "base") {
-    plot_fin <- plot_fin + scale_y_log10()
+    plot_fin <- plot_fin + scale_y_log10() +
+    geom_point(position = position_jitter(w=0.1,h=0))
   }
   if(input$plot == "barplot"){
     plot_fin <- plot_fin + stat_summary(aes_string(fill = input$deseq_var),
                                             fun = mean,
                                             geom = "bar",
                                             alpha = input$alpha) +
-      stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05)
+      stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.05) +
+      geom_point(position = position_jitter(w=0.1,h=0))
   }
   if(input$plot == "boxplot") {
    plot_fin <- plot_fin + geom_boxplot(aes_string(fill = input$deseq_var))

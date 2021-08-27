@@ -4,6 +4,8 @@
 - Make tximport work instead of tximeta
 - Make the ui a bit more consistent (box or div everywhere)
 - Make a enrichment thingy also for differential expression (interface it with gprofiler too)
+- Highlight specific genes in the volcanoplot, see [[https://erikaduan.github.io/posts/2021-01-02-volcano-plots-with-ggplot2/]]
+- Look to see if tximeta + summarizetoGene isn't doing the same thing twice
 
 
 * Snakemake
