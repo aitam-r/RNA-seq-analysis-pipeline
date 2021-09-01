@@ -50,7 +50,7 @@ The steps of the pipeline are as follow :
     You can choose between to snakefile, one for single end (`snakefile_single`) and one for paired end data (`snakefile_paired`).
     The minimum number of cores is two, because that's to pipe cutadapt into salmon and reduce disk usage
 10. Quality control check in `./analysis`
-11. Run `R -e "shiny::runApp('/scripts/shiny')"` for the rest of the analysis
+11. Run `R -e "shiny::runApp('./scripts/shiny')"` for the rest of the analysis
 
 
 ## From a raw counts table
@@ -131,7 +131,7 @@ The steps of the pipeline are as follow :
 
 Ideally, one should not use symbols such as `-`, `/` and spaces in the names or other column of this sample data table.
 
-1.  Run `R -e "shiny::runApp('/scripts/shiny')"`
+1.  Run `R -e "shiny::runApp('./scripts/shiny')"`
 
 
 # Footnotes
