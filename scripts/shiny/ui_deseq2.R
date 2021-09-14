@@ -52,7 +52,9 @@ tab_plots <- tabItem("plots",
                                                     click = "pca_click")
                                      ),
                                      box(width = 2,
-                                         htmlOutput("pca_info")
+                                         htmlOutput("pca_info"),
+                                         br(),
+                                         downloadButton("pca_down")
                                      )
                             ),
                             

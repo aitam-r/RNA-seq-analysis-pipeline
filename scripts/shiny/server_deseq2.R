@@ -177,13 +177,18 @@ pca_data <- reactive({
   plotPCA(rld_vst(), intgroup = input$variables, ntop = 1000, returnData = TRUE)
 })
 
-output$pca <- renderPlot({
+pca_plot <- reactive({
   req(pca_data())
   percentVar <- attr(pca_data(), "percentVar")
   ggplot(data=pca_data(), aes_string(x="PC1", y="PC2", color="group")) + geom_point(size=3) + 
     xlab(paste0("PC1: ",round(percentVar[1] * 100),"% variance")) +
     ylab(paste0("PC2: ",round(percentVar[2] * 100),"% variance")) +
     coord_fixed()
+})
+
+output$pca <- renderPlot({
+  req(pca_plot())
+  pca_plot()
 }, res = 96, height = 600)
 
 
@@ -191,6 +196,15 @@ output$pca_info <- renderUI({
   req(pca_data())
   HTML(paste0(nearPoints(pca_data(), input$pca_click)[,"name"]))
 })
+
+output$pca_down <- downloadHandler(
+  filename = function() {
+    paste("pca", ".svg", sep = "")
+  },
+  content = function(file) {
+    ggsave(plot = req(pca_plot()), filename = file, device = "svg")
+  }
+)
 
 output$ma <- renderPlot({
   req(my_values$res)
